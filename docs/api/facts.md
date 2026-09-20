@@ -11,6 +11,7 @@
 | PUT | `/:id` | エントリーを更新 |
 | DELETE | `/:id` | エントリーを削除 |
 | POST | `/:id/supplements` | 補足を追加 |
+| PUT | `/supplements/:id` | 補足を更新 |
 | DELETE | `/supplements/:id` | 補足を削除 |
 | GET | `/random` | ランダムに1件取得 |
 | GET | `/tags` | タグ一覧 |
@@ -45,6 +46,12 @@ Body: `{ title?, content?, tagIds? }`
 ## POST /:id/supplements
 
 補足を追加。
+
+Body: `{ content }`
+
+## PUT /supplements/:id
+
+補足を更新。
 
 Body: `{ content }`
 
