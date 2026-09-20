@@ -93,7 +93,6 @@ LifeDB/
 │   │       └── assets/
 │   │           ├── AssetsPage.tsx
 │   │           ├── TransactionsTab.tsx
-│   │           ├── BalanceTab.tsx
 │   │           └── StatsTab.tsx
 │   └── tests/                    # テスト
 │
