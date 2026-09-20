@@ -30,7 +30,10 @@ export const dontsService = {
   async getEntries(weekStart?: string): Promise<DontEntryItem[]> {
     let where: any = {};
     if (weekStart) {
-      const [year, month, day] = weekStart.split('-').map(Number);
+      const parts = weekStart.split('-').map(Number);
+      const year = parts[0] ?? 1970;
+      const month = parts[1] ?? 1;
+      const day = parts[2] ?? 1;
       // 選択週の日曜日の終わり (23:59:59.999 UTC)
       // 月曜日の日付から6日後が日曜日
       const endOfWeek = new Date(Date.UTC(year, month - 1, day + 6, 23, 59, 59, 999));
@@ -63,7 +66,7 @@ export const dontsService = {
       content: entry.content,
       createdAt: entry.createdAt,
       deletedAt: entry.deletedAt,
-      review: entry.reviews && entry.reviews.length > 0 ? entry.reviews[0].review : null,
+      review: entry.reviews && entry.reviews.length > 0 ? entry.reviews[0]?.review ?? null : null,
     }));
   },
 
