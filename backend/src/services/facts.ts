@@ -98,9 +98,14 @@ export const factsService = {
         }
       }
     }
+    const updateData: any = {};
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.color !== undefined) updateData.color = data.color;
+    if (data.sortOrder !== undefined) updateData.sortOrder = data.sortOrder;
+
     return prisma.tag.update({
       where: { id },
-      data,
+      data: updateData,
     });
   },
 
@@ -168,17 +173,18 @@ export const factsService = {
   },
 
   async createFact(data: CreateFactEntryRequest): Promise<FactEntryItem> {
+    const createData: any = {
+      title: data.title,
+      content: data.content ?? null,
+    };
+    if (data.tagIds && data.tagIds.length > 0) {
+      createData.tags = {
+        create: data.tagIds.map(tagId => ({ tagId })),
+      };
+    }
+
     const entry = await prisma.factEntry.create({
-      data: {
-        title: data.title,
-        content: data.content ?? null,
-        tags:
-          data.tagIds && data.tagIds.length > 0
-            ? {
-                create: data.tagIds.map(tagId => ({ tagId })),
-              }
-            : undefined,
-      },
+      data: createData,
       include: {
         tags: {
           include: { tag: true },
