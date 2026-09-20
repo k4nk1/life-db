@@ -42,6 +42,7 @@ export interface GetTasksResponse {
 export interface CompletedStatsResponse {
   count: number;
   totalWeight: number;
+  tasks?: TaskItem[] | undefined;
 }
 
 export interface RecurringTask {

@@ -208,25 +208,35 @@ async function deleteTask(id: number) {
 }
 
 // 完了履歴統計
-async function getCompletedStats(start: string, end: string): Promise<{ count: number; totalWeight: number }> {
+async function getCompletedStats(start: string, end: string): Promise<{ count: number; totalWeight: number; tasks: TaskItem[] }> {
   const startDate = new Date(`${start}T00:00:00.000`);
   const endDate = new Date(`${end}T23:59:59.999`);
 
-  const result = await prisma.task.aggregate({
-    where: {
-      status: 'completed',
-      completedAt: {
-        gte: startDate,
-        lte: endDate,
-      },
+  const where = {
+    status: 'completed',
+    completedAt: {
+      gte: startDate,
+      lte: endDate,
     },
+  };
+
+  const result = await prisma.task.aggregate({
+    where,
     _count: { id: true },
     _sum: { weight: true },
   });
 
+  const completedTasks = await prisma.task.findMany({
+    where,
+    orderBy: { completedAt: 'desc' },
+  });
+
+  const tasksWithWeight = (await attachTotalWeights(completedTasks)) as TaskItem[];
+
   return {
     count: result._count.id,
     totalWeight: result._sum.weight ?? 0,
+    tasks: tasksWithWeight,
   };
 }
 
