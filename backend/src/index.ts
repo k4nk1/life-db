@@ -15,9 +15,11 @@ app.use(express.json());
 // APIルーティング
 import dailyRouter from './routes/daily';
 import tasksRouter from './routes/tasks';
+import factsRouter from './routes/facts';
 
 app.use('/api/daily', dailyRouter);
 app.use('/api/tasks', tasksRouter);
+app.use('/api/facts', factsRouter);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
