@@ -53,6 +53,10 @@ export interface CreateSupplementRequest {
   content: string;
 }
 
+export interface UpdateSupplementRequest {
+  content: string;
+}
+
 export interface RandomFactResponse {
   id: number;
   title: string;

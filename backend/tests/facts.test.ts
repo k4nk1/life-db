@@ -132,6 +132,18 @@ describe('Facts Service', () => {
       expect(target?.supplements[0]?.content).toBe('Introduced in TypeScript 4.9');
     });
 
+    it('updates a supplement', async () => {
+      const updated = await factsService.updateSupplement(
+        supplementId,
+        'Updated: Introduced in TypeScript 4.9'
+      );
+      expect(updated.content).toBe('Updated: Introduced in TypeScript 4.9');
+
+      const facts = await factsService.getFacts();
+      const target = facts.items.find(f => f.id === entryId);
+      expect(target?.supplements[0]?.content).toBe('Updated: Introduced in TypeScript 4.9');
+    });
+
     it('deletes a supplement', async () => {
       await factsService.deleteSupplement(supplementId);
       const facts = await factsService.getFacts();
@@ -285,6 +297,14 @@ describe('Facts Service', () => {
       expect(res.status).toBe(200);
       expect(res.body.content).toBe('Supplement via API');
       supplementId = res.body.id;
+    });
+
+    it('PUT /api/facts/supplements/:id updates a supplement', async () => {
+      const res = await request(app)
+        .put(`/api/facts/supplements/${supplementId}`)
+        .send({ content: 'Updated Supplement via API' });
+      expect(res.status).toBe(200);
+      expect(res.body.content).toBe('Updated Supplement via API');
     });
 
     it('DELETE /api/facts/supplements/:id deletes a supplement', async () => {

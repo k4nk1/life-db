@@ -55,6 +55,18 @@ router.delete('/tags/:id', async (req, res) => {
   }
 });
 
+// 補足更新 (/:id より前に定義)
+router.put('/supplements/:id', async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const { content } = req.body;
+    const supplement = await factsService.updateSupplement(id, content);
+    res.json(supplement);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update supplement' });
+  }
+});
+
 // 補足削除 (/:id より前に定義)
 router.delete('/supplements/:id', async (req, res) => {
   try {

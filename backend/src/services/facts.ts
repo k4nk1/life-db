@@ -279,6 +279,13 @@ export const factsService = {
     });
   },
 
+  async updateSupplement(id: number, content: string): Promise<FactSupplement> {
+    return prisma.factSupplement.update({
+      where: { id },
+      data: { content },
+    });
+  },
+
   async deleteSupplement(id: number): Promise<{ success: boolean }> {
     await prisma.factSupplement.delete({
       where: { id },
