@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import DailyPage from './pages/daily/DailyPage';
+import TasksPage from './pages/tasks/TasksPage';
 
 function App() {
   return (
@@ -9,7 +10,7 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<div>ホーム（未実装）</div>} />
           <Route path="daily" element={<DailyPage />} />
-          <Route path="tasks" element={<div>やること（未実装）</div>} />
+          <Route path="tasks" element={<TasksPage />} />
           <Route path="facts" element={<div>事実＆思考（未実装）</div>} />
           <Route path="donts" element={<div>やらないこと（未実装）</div>} />
           <Route path="documents" element={<div>文書管理（未実装）</div>} />
