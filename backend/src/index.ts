@@ -17,11 +17,13 @@ import dailyRouter from './routes/daily';
 import tasksRouter from './routes/tasks';
 import factsRouter from './routes/facts';
 import dontsRouter from './routes/donts';
+import documentsRouter from './routes/documents';
 
 app.use('/api/daily', dailyRouter);
 app.use('/api/tasks', tasksRouter);
 app.use('/api/facts', factsRouter);
 app.use('/api/donts', dontsRouter);
+app.use('/api/documents', documentsRouter);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
