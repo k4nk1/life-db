@@ -84,6 +84,13 @@ router.get('/', async (req, res) => {
       parentTaskId,
     } = req.query;
 
+    if (parentTaskId !== undefined) {
+      const result = await tasksService.getTasks({
+        parentTaskId: Number(parentTaskId),
+      });
+      return res.json(result);
+    }
+
     const result = await tasksService.getTasks({
       page: page ? Number(page) : undefined,
       limit: limit ? Number(limit) : undefined,
@@ -92,7 +99,6 @@ router.get('/', async (req, res) => {
       search: typeof search === 'string' ? search : undefined,
       status: typeof status === 'string' ? status : undefined,
       deadlineBefore: typeof deadlineBefore === 'string' ? deadlineBefore : undefined,
-      parentTaskId: parentTaskId !== undefined ? Number(parentTaskId) : undefined,
     });
 
     res.json(result);

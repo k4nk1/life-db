@@ -6,9 +6,9 @@ export interface Task {
   title: string;
   detail: string | null;
   weight: number;
-  deadline: string | null;
+  deadline: string | Date | null;
   status: string;
-  completedAt: string | null;
+  completedAt: string | Date | null;
   parentTaskId: number | null;
 }
 
@@ -18,20 +18,20 @@ export interface TaskItem extends Task {
 
 export interface CreateTaskRequest {
   title: string;
-  detail?: string | null;
-  weight?: number;
-  deadline?: string | null;
-  status?: string;
-  parentTaskId?: number | null;
+  detail?: string | null | undefined;
+  weight?: number | undefined;
+  deadline?: string | Date | null | undefined;
+  status?: string | undefined;
+  parentTaskId?: number | null | undefined;
 }
 
 export interface UpdateTaskRequest {
-  title?: string;
-  detail?: string | null;
-  weight?: number;
-  deadline?: string | null;
-  status?: string;
-  parentTaskId?: number | null;
+  title?: string | undefined;
+  detail?: string | null | undefined;
+  weight?: number | undefined;
+  deadline?: string | Date | null | undefined;
+  status?: string | undefined;
+  parentTaskId?: number | null | undefined;
 }
 
 export interface GetTasksResponse {
@@ -57,20 +57,20 @@ export interface RecurringTask {
 
 export interface CreateRecurringTaskRequest {
   title: string;
-  detail?: string | null;
-  weight?: number;
+  detail?: string | null | undefined;
+  weight?: number | undefined;
   repeatType: string;
-  repeatTime?: string | null;
-  repeatDays?: string | null;
-  deadlineOffset?: number | null;
+  repeatTime?: string | null | undefined;
+  repeatDays?: string | null | undefined;
+  deadlineOffset?: number | null | undefined;
 }
 
 export interface UpdateRecurringTaskRequest {
-  title?: string;
-  detail?: string | null;
-  weight?: number;
-  repeatType?: string;
-  repeatTime?: string | null;
-  repeatDays?: string | null;
-  deadlineOffset?: number | null;
+  title?: string | undefined;
+  detail?: string | null | undefined;
+  weight?: number | undefined;
+  repeatType?: string | undefined;
+  repeatTime?: string | null | undefined;
+  repeatDays?: string | null | undefined;
+  deadlineOffset?: number | null | undefined;
 }
