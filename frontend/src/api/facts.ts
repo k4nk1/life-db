@@ -7,6 +7,7 @@ import type {
   CreateFactEntryRequest,
   UpdateFactEntryRequest,
   CreateSupplementRequest,
+  UpdateSupplementRequest,
   RandomFactResponse,
   CreateTagRequest,
   UpdateTagRequest,
@@ -52,6 +53,15 @@ export const factsApi = {
     data: CreateSupplementRequest
   ): Promise<FactSupplement> => {
     const res = await client.post<FactSupplement>(`/${entryId}/supplements`, data);
+    return res.data;
+  },
+
+  // 補足更新
+  updateSupplement: async (
+    supplementId: number,
+    data: UpdateSupplementRequest
+  ): Promise<FactSupplement> => {
+    const res = await client.put<FactSupplement>(`/supplements/${supplementId}`, data);
     return res.data;
   },
 

@@ -53,6 +53,9 @@ const ListTab = () => {
   const [editingContentId, setEditingContentId] = useState<number | null>(null);
   const [contentValue, setContentValue] = useState('');
 
+  const [editingSupplementId, setEditingSupplementId] = useState<number | null>(null);
+  const [editingSupplementText, setEditingSupplementText] = useState('');
+
   // タグ変更用 Popover ステート
   const [tagPopoverAnchor, setTagPopoverAnchor] = useState<{
     el: HTMLElement;
@@ -228,6 +231,34 @@ const ListTab = () => {
     try {
       await factsApi.createSupplement(entryId, { content: text });
       await fetchEntries();
+    } catch {
+      await fetchEntries();
+    }
+  };
+
+  // 補足更新（インライン保存）
+  const handleSaveSupplement = async (entryId: number, supplementId: number) => {
+    const trimmed = editingSupplementText.trim();
+    setEditingSupplementId(null);
+    if (!trimmed) return;
+
+    // 楽観的更新
+    setEntries((prev) =>
+      prev.map((e) => {
+        if (e.id === entryId) {
+          return {
+            ...e,
+            supplements: e.supplements.map((s) =>
+              s.id === supplementId ? { ...s, content: trimmed } : s
+            ),
+          };
+        }
+        return e;
+      })
+    );
+
+    try {
+      await factsApi.updateSupplement(supplementId, { content: trimmed });
     } catch {
       await fetchEntries();
     }
@@ -618,9 +649,41 @@ const ListTab = () => {
                                   '&:hover': { bgcolor: '#eceff1' },
                                 }}
                               >
-                                <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', flexGrow: 1, mr: 2 }}>
-                                  {supplement.content}
-                                </Typography>
+                                {editingSupplementId === supplement.id ? (
+                                  <TextField
+                                    size="small"
+                                    variant="standard"
+                                    value={editingSupplementText}
+                                    autoFocus
+                                    onChange={(e) => setEditingSupplementText(e.target.value)}
+                                    onBlur={() => handleSaveSupplement(entry.id, supplement.id)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') handleSaveSupplement(entry.id, supplement.id);
+                                      if (e.key === 'Escape') setEditingSupplementId(null);
+                                    }}
+                                    sx={{ flexGrow: 1, mr: 2, '& .MuiInputBase-input': { py: 0.25, fontSize: '0.875rem' } }}
+                                  />
+                                ) : (
+                                  <Typography
+                                    variant="body2"
+                                    onClick={() => {
+                                      setEditingSupplementId(supplement.id);
+                                      setEditingSupplementText(supplement.content);
+                                    }}
+                                    sx={{
+                                      whiteSpace: 'pre-wrap',
+                                      flexGrow: 1,
+                                      mr: 2,
+                                      cursor: 'pointer',
+                                      py: 0.25,
+                                      px: 0.5,
+                                      borderRadius: 0.5,
+                                      '&:hover': { bgcolor: 'action.hover', textDecoration: 'underline' },
+                                    }}
+                                  >
+                                    {supplement.content}
+                                  </Typography>
+                                )}
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
                                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                                     {formatDate(supplement.createdAt)}
