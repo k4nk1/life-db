@@ -1,0 +1,164 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// ==========================================
+// デイリー (Daily)
+// ==========================================
+
+model DailyRecord {
+  id         Int       @id @default(autoincrement())
+  date       String    @unique // YYYY-MM-DD
+  goal       String?
+  reflection String?
+  actions    Action[]
+}
+
+model ActionType {
+  id        Int             @id @default(autoincrement())
+  name      String
+  color     String          // HEX
+  sortOrder Int             @default(0)
+  subtypes  ActionSubtype[]
+}
+
+model ActionSubtype {
+  id        Int         @id @default(autoincrement())
+  name      String
+  typeId    Int
+  type      ActionType  @relation(fields: [typeId], references: [id], onDelete: Cascade)
+  sortOrder Int         @default(0)
+  actions   Action[]
+}
+
+model Action {
+  id            Int           @id @default(autoincrement())
+  dailyRecordId Int
+  dailyRecord   DailyRecord   @relation(fields: [dailyRecordId], references: [id], onDelete: Cascade)
+  subtypeId     Int
+  subtype       ActionSubtype @relation(fields: [subtypeId], references: [id], onDelete: Restrict)
+  startMinutes  Int           // 0〜1440
+  endMinutes    Int           // 0〜1440
+  detail        String?
+}
+
+// ==========================================
+// やること (Tasks)
+// ==========================================
+
+model Task {
+  id           Int       @id @default(autoincrement())
+  title        String
+  detail       String?
+  weight       Int       @default(1)
+  deadline     DateTime?
+  status       String    @default("not_started")
+  completedAt  DateTime?
+  parentTaskId Int?
+  parentTask   Task?     @relation("TaskToTask", fields: [parentTaskId], references: [id], onDelete: Cascade)
+  childTasks   Task[]    @relation("TaskToTask")
+}
+
+model RecurringTask {
+  id             Int     @id @default(autoincrement())
+  title          String
+  detail         String?
+  weight         Int     @default(1)
+  repeatType     String
+  repeatTime     String? // HH:MM
+  repeatDays     String? // 曜日 or 日
+  deadlineOffset Int?
+}
+
+// ==========================================
+// 事実＆思考 (Facts)
+// ==========================================
+
+model Tag {
+  id        Int             @id @default(autoincrement())
+  name      String          @unique
+  color     String
+  sortOrder Int             @default(0)
+  entries   FactEntryTag[]
+}
+
+model FactEntry {
+  id          Int             @id @default(autoincrement())
+  title       String
+  content     String?
+  createdAt   DateTime        @default(now())
+  tags        FactEntryTag[]
+  supplements FactSupplement[]
+}
+
+model FactEntryTag {
+  id      Int       @id @default(autoincrement())
+  entryId Int
+  entry   FactEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  tagId   Int
+  tag     Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, tagId])
+}
+
+model FactSupplement {
+  id        Int       @id @default(autoincrement())
+  entryId   Int
+  entry     FactEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime  @default(now())
+}
+
+// ==========================================
+// やらないこと (Donts)
+// ==========================================
+
+model DontEntry {
+  id        Int          @id @default(autoincrement())
+  content   String
+  createdAt DateTime     @default(now())
+  deletedAt DateTime?
+  reviews   DontReview[]
+}
+
+model DontReview {
+  id        Int       @id @default(autoincrement())
+  entryId   Int
+  entry     DontEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  weekStart String    // YYYY-MM-DD
+  review    String
+
+  @@unique([entryId, weekStart])
+}
+
+// ==========================================
+// 文書管理 (Documents)
+// ==========================================
+
+model Document {
+  id        Int        @id @default(autoincrement())
+  name      String
+  type      String     // folder or document
+  parentId  Int?
+  parent    Document?  @relation("DocumentToDocument", fields: [parentId], references: [id], onDelete: Cascade)
+  children  Document[] @relation("DocumentToDocument")
+  content   String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+// ==========================================
+// 資産 (Assets)
+// ==========================================
+
+model Transaction {
+  id      Int      @id @default(autoincrement())
+  date    DateTime
+  amount  Int
+  detail  String?
+}
