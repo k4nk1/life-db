@@ -76,9 +76,36 @@ describe('Donts Service & Routes', () => {
       expect(entries[0]?.review).toBeNull();
     });
 
-    it('performs logical delete on an entry', async () => {
-      const deleted = await dontsService.deleteEntry(entryId);
-      expect(deleted.deletedAt).not.toBeNull();
+    it('performs hard delete when deleted within the same week', async () => {
+      // 作成日時と同じ週内での削除
+      const entry = await prisma.dontEntry.findUnique({ where: { id: entryId } });
+      const sameWeekDate = new Date(entry!.createdAt);
+      // 同じ週の日時で削除
+      const deleted = await dontsService.deleteEntry(entryId, sameWeekDate);
+      expect(deleted).not.toBeNull();
+      // DBから物理削除されていること
+      const inDb = await prisma.dontEntry.findUnique({ where: { id: entryId } });
+      expect(inDb).toBeNull();
+    });
+
+    it('performs logical delete when deleted across weeks (after Monday 0:00)', async () => {
+      // 過去の日付でエントリー作成
+      const pastEntry = await prisma.dontEntry.create({
+        data: {
+          content: '先週作成したエントリー',
+          createdAt: new Date('2026-09-07T10:00:00.000Z'), // 2026-09-07 の週
+        },
+      });
+
+      // 翌週以降（2026-09-14 の週）の日時で削除
+      const nextWeekDate = new Date('2026-09-14T10:00:00.000Z');
+      const deleted = await dontsService.deleteEntry(pastEntry.id, nextWeekDate);
+      expect(deleted?.deletedAt).not.toBeNull();
+
+      // DBに論理削除されたレコードが残っていること
+      const inDb = await prisma.dontEntry.findUnique({ where: { id: pastEntry.id } });
+      expect(inDb).not.toBeNull();
+      expect(inDb?.deletedAt).not.toBeNull();
     });
   });
 

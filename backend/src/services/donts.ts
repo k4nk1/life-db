@@ -25,6 +25,15 @@ const prisma = new PrismaClient({
 
 export { prisma };
 
+function getMondayStart(date: Date): number {
+  const d = new Date(date);
+  const day = d.getDay(); // 0: Sun, 1: Mon, ..., 6: Sat
+  const diffToMonday = (day + 6) % 7;
+  d.setDate(d.getDate() - diffToMonday);
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+}
+
 export const dontsService = {
   // エントリー一覧取得（週フィルタ、指定週の振り返り付き）
   async getEntries(weekStart?: string): Promise<DontEntryItem[]> {
@@ -89,12 +98,30 @@ export const dontsService = {
     });
   },
 
-  // 論理削除
-  async deleteEntry(id: number) {
+  // エントリー削除（週をまたいでいない場合は物理削除、週をまたいでいる場合は論理削除）
+  async deleteEntry(id: number, now: Date = new Date()) {
+    const entry = await prisma.dontEntry.findUnique({
+      where: { id },
+    });
+    if (!entry) {
+      return null;
+    }
+
+    const createdMonday = getMondayStart(entry.createdAt);
+    const currentMonday = getMondayStart(now);
+
+    // 月曜日の0:00が間にない（同一週内）場合は物理削除
+    if (createdMonday === currentMonday) {
+      return prisma.dontEntry.delete({
+        where: { id },
+      });
+    }
+
+    // 週をまたいでいる場合は論理削除
     return prisma.dontEntry.update({
       where: { id },
       data: {
-        deletedAt: new Date(),
+        deletedAt: now,
       },
     });
   },
