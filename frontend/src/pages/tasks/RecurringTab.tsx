@@ -28,6 +28,11 @@ import {
   Tooltip,
   Slider,
   Popover,
+  useTheme,
+  useMediaQuery,
+  Card,
+  CardContent,
+  Stack,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
@@ -50,6 +55,9 @@ const DAYS_OF_WEEK = [
 ];
 
 const RecurringTab = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   const [tasks, setTasks] = useState<RecurringTask[]>([]);
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -279,17 +287,181 @@ const RecurringTab = () => {
           size="small"
           startIcon={<AddIcon />}
           onClick={handleOpenCreate}
+          fullWidth={isMobile}
         >
           繰り返しタスク作成
         </Button>
       </Box>
 
-      {/* 一覧テーブル */}
+      {/* 一覧表示 */}
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
           <CircularProgress size={30} />
         </Box>
+      ) : isMobile ? (
+        /* スマホ向け: カードリスト表示 */
+        <Stack spacing={1}>
+          {tasks.length === 0 ? (
+            <Paper variant="outlined" sx={{ p: 3, textAlign: 'center', color: 'text.secondary' }}>
+              繰り返しタスクが登録されていません
+            </Paper>
+          ) : (
+            tasks.map(task => (
+              <Card key={task.id} variant="outlined" sx={{ borderRadius: 1.5 }}>
+                <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                  {/* タイトル ＆ 削除ボタン */}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1 }}>
+                    {editingTitleId === task.id ? (
+                      <TextField
+                        size="small"
+                        variant="standard"
+                        value={editingTitleVal}
+                        autoFocus
+                        fullWidth
+                        onChange={e => setEditingTitleVal(e.target.value)}
+                        onBlur={() => handleSaveInlineTitle(task.id)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') handleSaveInlineTitle(task.id);
+                          if (e.key === 'Escape') setEditingTitleId(null);
+                        }}
+                      />
+                    ) : (
+                      <Typography
+                        variant="body2"
+                        onClick={() => {
+                          setEditingTitleId(task.id);
+                          setEditingTitleVal(task.title);
+                        }}
+                        sx={{
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          py: 0.25,
+                          px: 0.5,
+                          borderRadius: 1,
+                          flexGrow: 1,
+                          wordBreak: 'break-word',
+                          '&:hover': { bgcolor: 'action.hover' },
+                        }}
+                      >
+                        {task.title}
+                      </Typography>
+                    )}
+                    <IconButton size="small" color="error" onClick={() => handleDelete(task.id)} sx={{ p: 0.5 }}>
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+
+                  {/* 詳細 */}
+                  <Box sx={{ mt: 0.5, mb: 1 }}>
+                    {editingDetailId === task.id ? (
+                      <TextField
+                        size="small"
+                        variant="standard"
+                        value={editingDetailVal}
+                        autoFocus
+                        fullWidth
+                        multiline
+                        onChange={e => setEditingDetailVal(e.target.value)}
+                        onBlur={() => handleSaveInlineDetail(task.id)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') handleSaveInlineDetail(task.id);
+                          if (e.key === 'Escape') setEditingDetailId(null);
+                        }}
+                      />
+                    ) : (
+                      <Typography
+                        variant="caption"
+                        onClick={() => {
+                          setEditingDetailId(task.id);
+                          setEditingDetailVal(task.detail || '');
+                        }}
+                        sx={{
+                          cursor: 'pointer',
+                          display: 'block',
+                          py: 0.25,
+                          px: 0.5,
+                          borderRadius: 1,
+                          color: task.detail ? 'text.secondary' : 'text.disabled',
+                          fontStyle: task.detail ? 'normal' : 'italic',
+                          '&:hover': { bgcolor: 'action.hover' },
+                        }}
+                      >
+                        {task.detail || '詳細なし'}
+                      </Typography>
+                    )}
+                  </Box>
+
+                  {/* メタ情報（重さ・スケジュール・期限）＆ 手動追加ボタン */}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1, pt: 0.5, borderTop: '1px dashed', borderColor: 'divider' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                      {/* 重さ */}
+                      <Box
+                        onClick={e => {
+                          setActiveTaskIdForWeight(task.id);
+                          setActiveWeightVal(task.weight);
+                          setWeightAnchor(e.currentTarget);
+                        }}
+                        sx={{
+                          cursor: 'pointer',
+                          px: 0.75,
+                          py: 0.25,
+                          borderRadius: 1,
+                          bgcolor: 'action.hover',
+                        }}
+                      >
+                        <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
+                          重さ: {task.weight}
+                        </Typography>
+                      </Box>
+
+                      {/* 繰り返し日時 */}
+                      <Chip
+                        label={formatSchedule(task)}
+                        size="small"
+                        color={task.repeatType === 'manual' ? 'default' : 'primary'}
+                        variant="outlined"
+                        onClick={e => handleOpenSchedulePopover(e, task)}
+                        sx={{ cursor: 'pointer', fontSize: '0.7rem' }}
+                      />
+
+                      {/* 相対期限 */}
+                      <Typography
+                        variant="caption"
+                        onClick={e => handleOpenOffsetPopover(e, task)}
+                        sx={{
+                          cursor: 'pointer',
+                          px: 0.5,
+                          py: 0.25,
+                          borderRadius: 1,
+                          color: task.deadlineOffset !== null ? 'text.primary' : 'text.secondary',
+                          '&:hover': { bgcolor: 'action.hover' },
+                        }}
+                      >
+                        期限: {formatDeadlineOffset(task.deadlineOffset)}
+                      </Typography>
+                    </Box>
+
+                    {/* 手動追加ボタン */}
+                    {task.repeatType === 'manual' && (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="success"
+                        startIcon={<PlayArrowIcon fontSize="small" />}
+                        onClick={() => handleTrigger(task.id)}
+                        sx={{ py: 0.25, px: 1, fontSize: '0.75rem', minWidth: 70 }}
+                      >
+                        追加
+                      </Button>
+                    )}
+                  </Box>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </Stack>
       ) : (
+        /* PC向け: テーブル表示 */
         <TableContainer component={Paper} variant="outlined">
           <Table size="small">
             <TableHead>
@@ -625,7 +797,13 @@ const RecurringTab = () => {
       </Popover>
 
       {/* 作成ダイアログ */}
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        fullScreen={isMobile}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle sx={{ fontWeight: 'bold', pb: 1 }}>
           新しい繰り返しタスク
         </DialogTitle>

@@ -15,7 +15,7 @@ function CustomTabPanel(props: { children?: React.ReactNode; index: number; valu
       aria-labelledby={`tasks-tab-${index}`}
       {...other}
     >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+      {value === index && <Box sx={{ p: { xs: 1.5, sm: 3 } }}>{children}</Box>}
     </div>
   );
 }
@@ -29,11 +29,22 @@ const TasksPage = () => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
+      <Typography
+        variant="h4"
+        gutterBottom
+        sx={{ fontWeight: 'bold', fontSize: { xs: '1.5rem', sm: '2.125rem' } }}
+      >
         やること
       </Typography>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={value} onChange={handleChange} aria-label="tasks tabs">
+        <Tabs
+          value={value}
+          onChange={handleChange}
+          aria-label="tasks tabs"
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+        >
           <Tab label="一覧" />
           <Tab label="繰り返しタスク" />
           <Tab label="完了履歴" />
