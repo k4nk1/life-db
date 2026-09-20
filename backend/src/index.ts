@@ -9,7 +9,10 @@ const port = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// APIルーティングのプレースホルダー
+// APIルーティング
+import dailyRouter from './routes/daily';
+app.use('/api/daily', dailyRouter);
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
