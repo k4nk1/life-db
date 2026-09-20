@@ -32,6 +32,7 @@ export interface DailyRecord {
 export interface DailyStats {
   id: number;
   name: string;
+  typeName?: string | undefined;
   color: string;
   totalMinutes: number;
   percentage: number;

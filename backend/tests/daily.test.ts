@@ -1,7 +1,18 @@
-import { dailyService } from '../src/services/daily';
+import path from 'path';
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+const testDbPath = path.resolve(__dirname, '../prisma/test.db');
+process.env.DATABASE_URL = `file:${testDbPath}`;
+
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: `file:${testDbPath}`,
+    },
+  },
+});
+
+import { dailyService } from '../src/services/daily';
 
 describe('Daily Service', () => {
   let typeId: number;

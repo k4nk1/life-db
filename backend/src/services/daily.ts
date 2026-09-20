@@ -1,6 +1,22 @@
+import path from 'path';
+import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+
+const defaultDbPath = path.resolve(__dirname, '../../prisma/dev.db');
+let databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl || databaseUrl === 'file:./dev.db') {
+  databaseUrl = `file:${defaultDbPath}`;
+}
+
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: databaseUrl,
+    },
+  },
+});
 
 export const dailyService = {
   // Records
@@ -69,20 +85,36 @@ export const dailyService = {
       },
     });
 
-    const startIdx = new Date(start).getTime() / (1000 * 60 * 60 * 24);
-    const endIdx = new Date(end).getTime() / (1000 * 60 * 60 * 24);
-    const days = Math.max(1, endIdx - startIdx + 1);
+    const parseToDays = (dStr: string) => {
+      const parts = dStr.split('-').map(Number);
+      return Math.floor(Date.UTC(parts[0]!, parts[1]! - 1, parts[2]!) / (1000 * 60 * 60 * 24));
+    };
 
-    const statsMap = new Map<number, { id: number; name: string; color: string; totalMinutes: number }>();
+    const startDay = parseToDays(start);
+    const endDay = parseToDays(end);
+
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const todayDay = parseToDays(todayStr);
+
+    // 期間内で経過した日数（今日が水曜日で今週なら3で割る）
+    const effectiveEndDay = Math.min(endDay, todayDay);
+    const days = Math.max(1, effectiveEndDay - startDay + 1);
+
+    const statsMap = new Map<
+      number,
+      { id: number; name: string; typeName?: string | undefined; color: string; totalMinutes: number }
+    >();
 
     for (const action of actions) {
       const minutes = action.endMinutes - action.startMinutes;
       const keyId = groupBy === 'type' ? action.subtype.type.id : action.subtype.id;
-      
+
       if (!statsMap.has(keyId)) {
         statsMap.set(keyId, {
           id: keyId,
           name: groupBy === 'type' ? action.subtype.type.name : action.subtype.name,
+          typeName: groupBy === 'subtype' ? action.subtype.type.name : undefined,
           color: action.subtype.type.color,
           totalMinutes: 0,
         });
