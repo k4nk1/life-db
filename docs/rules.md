@@ -6,11 +6,12 @@
 
 | ドキュメント | パス | 形式 |
 |---|---|---|
-| 機能要件 | `specification.md` | Markdown |
+| 機能要件（概要） | `specification.md` | Markdown |
+| 機能要件（詳細） | `docs/features/<機能名>.md` | Markdown |
 | 開発ルール | `docs/rules.md` | Markdown |
 | Git運用 | `docs/git.md` | Markdown |
-| テーブル定義 | `docs/db.md` | Markdown（テーブルごとにセクション分け） |
-| API仕様 | `docs/api/<機能名>.md` | Markdown（エンドポイントごとにセクション分け） |
+| テーブル定義 | `docs/db/<機能名>.md` | Markdown |
+| API仕様 | `docs/api/<機能名>.md` | Markdown |
 | ディレクトリ構成 | `docs/structure.md` | Markdown |
 
 ### ドキュメントの方針

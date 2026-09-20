@@ -7,13 +7,13 @@
 | ファイル | 内容 |
 |---|---|
 | [specification.md](specification.md) | 画面ごとの機能要件（概要） |
-| [docs/features.md](docs/features.md) | 機能要件の詳細（データ型・操作・ロジック） |
+| [docs/features/](docs/features/) | 機能要件の詳細（データ型・操作・ロジック） |
+| [docs/db/](docs/db/) | テーブル定義 |
+| [docs/api/](docs/api/) | API仕様 |
 | [docs/stack.md](docs/stack.md) | 技術スタック |
 | [docs/structure.md](docs/structure.md) | ディレクトリ構成 |
 | [docs/rules.md](docs/rules.md) | 開発ルール（設計方針・実装ルール・テスト方針） |
 | [docs/git.md](docs/git.md) | Git運用方法（ブランチ・コミットメッセージ） |
-| docs/db.md | テーブル定義（未作成） |
-| docs/api/*.md | API仕様（未作成） |
 
 ## 設計の進捗
 
@@ -24,7 +24,7 @@
 | 3. 機能要件の詳細化 | ✅ 完了 |
 | 4. ディレクトリ構成 | ✅ 完了 |
 | 5. テーブル構造 | ✅ 完了 |
-| 6. APIエンドポイント | ⬜ 次のステップ |
+| 6. APIエンドポイント | ✅ 完了 |
 
 ## 実装の進捗
 

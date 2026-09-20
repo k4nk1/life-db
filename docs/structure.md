@@ -6,9 +6,23 @@ LifeDB/
 │   ├── rules.md
 │   ├── git.md
 │   ├── stack.md
-│   ├── features.md
-│   ├── db.md
-│   └── api/
+│   ├── features/                # 機能要件詳細
+│   │   ├── common.md
+│   │   ├── daily.md
+│   │   ├── tasks.md
+│   │   ├── facts.md
+│   │   ├── donts.md
+│   │   ├── documents.md
+│   │   ├── assets.md
+│   │   └── home.md
+│   ├── db/                      # テーブル定義
+│   │   ├── daily.md
+│   │   ├── tasks.md
+│   │   ├── facts.md
+│   │   ├── donts.md
+│   │   ├── documents.md
+│   │   └── assets.md
+│   └── api/                     # API仕様
 │       ├── daily.md
 │       ├── tasks.md
 │       ├── facts.md
