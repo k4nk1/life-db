@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -16,7 +16,11 @@ import {
   Snackbar,
   Alert,
   Tooltip,
+  IconButton,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { dailyApi } from '../../api/daily';
 import type { Action, ActionType } from '../../../../shared/types/daily';
 
@@ -51,6 +55,9 @@ const Timeline = ({ date, actions, onActionsChange }: TimelineProps) => {
   const [types, setTypes] = useState<ActionType[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   // 今日かどうかの判定と現在時刻（分）の管理
   const now = new Date();
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -77,7 +84,7 @@ const Timeline = ({ date, actions, onActionsChange }: TimelineProps) => {
   useEffect(() => {
     if (scrollContainerRef.current) {
       if (isToday) {
-        const containerHeight = scrollContainerRef.current.clientHeight || 550;
+        const containerHeight = scrollContainerRef.current.clientHeight || (isMobile ? 450 : 550);
         const targetScroll = currentMinutes - containerHeight / 2;
         const maxScroll = totalHours * hourHeight - containerHeight;
         const clampedScroll = Math.max(0, Math.min(maxScroll, targetScroll));
@@ -86,7 +93,7 @@ const Timeline = ({ date, actions, onActionsChange }: TimelineProps) => {
         scrollContainerRef.current.scrollTop = 0;
       }
     }
-  }, [date, isToday, currentMinutes]);
+  }, [date, isToday, currentMinutes, isMobile]);
 
   // ダイアログ状態
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -242,7 +249,7 @@ const Timeline = ({ date, actions, onActionsChange }: TimelineProps) => {
     <Paper
       variant="outlined"
       sx={{
-        p: 2,
+        p: { xs: 1.5, sm: 2 },
         bgcolor: '#ffffff',
         backgroundImage: 'none',
         boxShadow: 'none',
@@ -252,11 +259,11 @@ const Timeline = ({ date, actions, onActionsChange }: TimelineProps) => {
         タイムライン
       </Typography>
 
-      {/* スクロール領域: 高さを550pxに固定 */}
+      {/* スクロール領域: 高さをレスポンシブに設定 */}
       <Box
         ref={scrollContainerRef}
         sx={{
-          height: 550,
+          height: { xs: 450, sm: 550 },
           overflowY: 'auto',
           overflowX: 'hidden',
           border: '1px solid #e0e0e0',
@@ -490,8 +497,23 @@ const Timeline = ({ date, actions, onActionsChange }: TimelineProps) => {
       </Box>
 
       {/* 行動作成・編集ダイアログ */}
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle>{editingActionId === null ? '行動ブロックを作成' : '行動ブロックを編集'}</DialogTitle>
+      <Dialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        fullScreen={isMobile}
+      >
+        <DialogTitle sx={{ m: 0, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6" component="span" sx={{ fontWeight: 'bold' }}>
+            {editingActionId === null ? '行動ブロックを作成' : '行動ブロックを編集'}
+          </Typography>
+          {isMobile && (
+            <IconButton aria-label="close" onClick={() => setDialogOpen(false)} size="small">
+              <CloseIcon />
+            </IconButton>
+          )}
+        </DialogTitle>
         <DialogContent sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
           {/* 大分類選択 */}
           <FormControl fullWidth size="small">

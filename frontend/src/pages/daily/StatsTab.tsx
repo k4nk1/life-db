@@ -11,6 +11,8 @@ import {
   ToggleButtonGroup,
   ToggleButton,
   CircularProgress,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import { PieChart } from '@mui/x-charts/PieChart';
 import PeriodSelector from '../../components/PeriodSelector';
@@ -24,6 +26,8 @@ const formatHoursMinutes = (minutes: number) => {
 };
 
 const StatsTab = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [groupBy, setGroupBy] = useState<'type' | 'subtype'>('type');
   const [dateRange, setDateRange] = useState<{ start: string; end: string }>({
     start: '2026-09-01',
@@ -67,7 +71,16 @@ const StatsTab = () => {
   return (
     <Box>
       {/* 期間セレクタ ＆ 大分類/小分類の切り替え */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: { xs: 'center', sm: 'space-between' },
+          alignItems: 'center',
+          mb: 3,
+          flexWrap: 'wrap',
+          gap: 2,
+        }}
+      >
         <PeriodSelector defaultMode="month" onChange={handlePeriodChange} />
 
         <ToggleButtonGroup
@@ -79,10 +92,10 @@ const StatsTab = () => {
           size="small"
           color="primary"
         >
-          <ToggleButton value="type" sx={{ px: 2.5, fontWeight: 'bold' }}>
+          <ToggleButton value="type" sx={{ px: { xs: 2, sm: 2.5 }, fontWeight: 'bold' }}>
             大分類
           </ToggleButton>
-          <ToggleButton value="subtype" sx={{ px: 2.5, fontWeight: 'bold' }}>
+          <ToggleButton value="subtype" sx={{ px: { xs: 2, sm: 2.5 }, fontWeight: 'bold' }}>
             小分類
           </ToggleButton>
         </ToggleButtonGroup>
@@ -93,15 +106,25 @@ const StatsTab = () => {
           <CircularProgress />
         </Box>
       ) : stats.length === 0 || pieData.length === 0 ? (
-        <Paper variant="outlined" sx={{ p: 6, textAlign: 'center', bgcolor: '#ffffff' }}>
+        <Paper variant="outlined" sx={{ p: { xs: 4, sm: 6 }, textAlign: 'center', bgcolor: '#ffffff' }}>
           <Typography color="text.secondary">
             指定された期間（{dateRange.start} 〜 {dateRange.end}）の行動データはありません。
           </Typography>
         </Paper>
       ) : (
-        <Grid container spacing={3}>
+        <Grid container spacing={{ xs: 2, sm: 3 }}>
           <Grid size={{ xs: 12, md: 6 }}>
-            <Paper variant="outlined" sx={{ p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', bgcolor: '#ffffff' }}>
+            <Paper
+              variant="outlined"
+              sx={{
+                p: { xs: 2, sm: 3 },
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                bgcolor: '#ffffff',
+                overflow: 'hidden',
+              }}
+            >
               <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', alignSelf: 'flex-start' }}>
                 {groupBy === 'type' ? '大分類別割合' : '小分類別割合'}
               </Typography>
@@ -110,19 +133,20 @@ const StatsTab = () => {
                   {
                     data: pieData,
                     innerRadius: 0,
-                    outerRadius: 110,
+                    outerRadius: isMobile ? 75 : 105,
                     paddingAngle: 0,
                     cornerRadius: 0,
                   },
                 ]}
-                width={420}
-                height={280}
+                width={isMobile ? 300 : 420}
+                height={isMobile ? 220 : 280}
+                hideLegend={isMobile}
               />
             </Paper>
           </Grid>
 
           <Grid size={{ xs: 12, md: 6 }}>
-            <Paper variant="outlined" sx={{ p: 3, bgcolor: '#ffffff' }}>
+            <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, bgcolor: '#ffffff' }}>
               <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
                 内訳詳細
               </Typography>
@@ -151,7 +175,12 @@ const StatsTab = () => {
                         </Typography>
                       }
                       secondary={
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography
+                          component="span"
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ display: 'block', mt: 0.5, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
+                        >
                           合計: {formatHoursMinutes(stat.totalMinutes)} ({Math.round(stat.percentage)}%) / 1日平均: {formatHoursMinutes(stat.dailyAverageMinutes)}
                         </Typography>
                       }

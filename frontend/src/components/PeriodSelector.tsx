@@ -90,7 +90,7 @@ export const PeriodSelector = ({
   };
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 }, flexWrap: 'wrap', justifyContent: { xs: 'center', sm: 'flex-start' } }}>
       {/* 日 / 週 / 月 切り替えボタン */}
       <ToggleButtonGroup
         value={mode}
@@ -99,13 +99,13 @@ export const PeriodSelector = ({
         size="small"
         color="primary"
       >
-        <ToggleButton value="day" sx={{ px: 1.5, py: 0.5, fontWeight: 'bold' }}>
+        <ToggleButton value="day" sx={{ px: { xs: 1.25, sm: 1.5 }, py: 0.5, fontWeight: 'bold' }}>
           日
         </ToggleButton>
-        <ToggleButton value="week" sx={{ px: 1.5, py: 0.5, fontWeight: 'bold' }}>
+        <ToggleButton value="week" sx={{ px: { xs: 1.25, sm: 1.5 }, py: 0.5, fontWeight: 'bold' }}>
           週
         </ToggleButton>
-        <ToggleButton value="month" sx={{ px: 1.5, py: 0.5, fontWeight: 'bold' }}>
+        <ToggleButton value="month" sx={{ px: { xs: 1.25, sm: 1.5 }, py: 0.5, fontWeight: 'bold' }}>
           月
         </ToggleButton>
       </ToggleButtonGroup>
@@ -119,7 +119,8 @@ export const PeriodSelector = ({
           variant="subtitle1"
           sx={{
             fontWeight: 'bold',
-            minWidth: 160,
+            minWidth: { xs: 140, sm: 160 },
+            fontSize: { xs: '0.9rem', sm: '1rem' },
             textAlign: 'center',
             userSelect: 'none',
           }}

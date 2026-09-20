@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import type { DragEvent } from 'react';
 import {
   Box,
   Button,
@@ -19,17 +20,22 @@ import {
   TextField,
   Snackbar,
   Alert,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import CloseIcon from '@mui/icons-material/Close';
 import ColorPicker, { PRESET_COLORS } from '../../components/ColorPicker';
 import { dailyApi } from '../../api/daily';
 import type { ActionType, ActionSubtype } from '../../../../shared/types/daily';
 
 const TypesTab = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [types, setTypes] = useState<ActionType[]>([]);
   const [expandedIds, setExpandedIds] = useState<Record<number, boolean>>({});
 
@@ -264,6 +270,7 @@ const TypesTab = () => {
                   type={type}
                   index={index}
                   isExpanded={isExpanded}
+                  isMobile={isMobile}
                   onToggleExpand={() => toggleExpand(type.id)}
                   onColorChange={(color) => handleUpdateTypeColor(type.id, color)}
                   onEditName={() => handleOpenEditName('type', type.id, type.name)}
@@ -285,8 +292,23 @@ const TypesTab = () => {
       </TableContainer>
 
       {/* 大分類追加ダイアログ */}
-      <Dialog open={openTypeDialog} onClose={() => setOpenTypeDialog(false)} maxWidth="xs" fullWidth>
-        <DialogTitle>大分類を追加</DialogTitle>
+      <Dialog
+        open={openTypeDialog}
+        onClose={() => setOpenTypeDialog(false)}
+        maxWidth="xs"
+        fullWidth
+        fullScreen={isMobile}
+      >
+        <DialogTitle sx={{ m: 0, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6" component="span" sx={{ fontWeight: 'bold' }}>
+            大分類を追加
+          </Typography>
+          {isMobile && (
+            <IconButton aria-label="close" onClick={() => setOpenTypeDialog(false)} size="small">
+              <CloseIcon />
+            </IconButton>
+          )}
+        </DialogTitle>
         <DialogContent sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
           <TextField
             autoFocus
@@ -303,7 +325,7 @@ const TypesTab = () => {
             <ColorPicker color={newTypeColor} onChange={setNewTypeColor} size={28} />
           </Box>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={() => setOpenTypeDialog(false)}>キャンセル</Button>
           <Button onClick={handleCreateType} variant="contained" disabled={!newTypeName.trim()}>
             追加
@@ -312,8 +334,23 @@ const TypesTab = () => {
       </Dialog>
 
       {/* 小分類追加ダイアログ */}
-      <Dialog open={openSubtypeDialog} onClose={() => setOpenSubtypeDialog(false)} maxWidth="xs" fullWidth>
-        <DialogTitle>小分類を追加</DialogTitle>
+      <Dialog
+        open={openSubtypeDialog}
+        onClose={() => setOpenSubtypeDialog(false)}
+        maxWidth="xs"
+        fullWidth
+        fullScreen={isMobile}
+      >
+        <DialogTitle sx={{ m: 0, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6" component="span" sx={{ fontWeight: 'bold' }}>
+            小分類を追加
+          </Typography>
+          {isMobile && (
+            <IconButton aria-label="close" onClick={() => setOpenSubtypeDialog(false)} size="small">
+              <CloseIcon />
+            </IconButton>
+          )}
+        </DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
           <TextField
             autoFocus
@@ -324,7 +361,7 @@ const TypesTab = () => {
             size="small"
           />
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={() => setOpenSubtypeDialog(false)}>キャンセル</Button>
           <Button onClick={handleCreateSubtype} variant="contained" disabled={!newSubtypeName.trim()}>
             追加
@@ -333,8 +370,23 @@ const TypesTab = () => {
       </Dialog>
 
       {/* 分類名編集ダイアログ */}
-      <Dialog open={Boolean(editTarget)} onClose={() => setEditTarget(null)} maxWidth="xs" fullWidth>
-        <DialogTitle>{editTarget?.kind === 'type' ? '大分類名を編集' : '小分類名を編集'}</DialogTitle>
+      <Dialog
+        open={Boolean(editTarget)}
+        onClose={() => setEditTarget(null)}
+        maxWidth="xs"
+        fullWidth
+        fullScreen={isMobile}
+      >
+        <DialogTitle sx={{ m: 0, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6" component="span" sx={{ fontWeight: 'bold' }}>
+            {editTarget?.kind === 'type' ? '大分類名を編集' : '小分類名を編集'}
+          </Typography>
+          {isMobile && (
+            <IconButton aria-label="close" onClick={() => setEditTarget(null)} size="small">
+              <CloseIcon />
+            </IconButton>
+          )}
+        </DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
           <TextField
             autoFocus
@@ -345,7 +397,7 @@ const TypesTab = () => {
             size="small"
           />
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={() => setEditTarget(null)}>キャンセル</Button>
           <Button onClick={handleSaveEditName} variant="contained" disabled={!editName.trim()}>
             保存
@@ -372,6 +424,7 @@ interface TypeRowProps {
   type: ActionType;
   index: number;
   isExpanded: boolean;
+  isMobile: boolean;
   onToggleExpand: () => void;
   onColorChange: (color: string) => void;
   onEditName: () => void;
@@ -380,16 +433,17 @@ interface TypeRowProps {
   onEditSubtypeName: (subtype: ActionSubtype) => void;
   onDeleteSubtype: (subtypeId: number) => void;
   onDragStart: () => void;
-  onDragOver: (e: React.DragEvent) => void;
+  onDragOver: (e: DragEvent) => void;
   onDrop: () => void;
   onSubtypeDragStart: (typeId: number, index: number) => void;
-  onSubtypeDragOver: (e: React.DragEvent) => void;
+  onSubtypeDragOver: (e: DragEvent) => void;
   onSubtypeDrop: (typeId: number, index: number) => void;
 }
 
 const TypeRow = ({
   type,
   isExpanded,
+  isMobile,
   onToggleExpand,
   onColorChange,
   onEditName,
@@ -421,43 +475,41 @@ const TypeRow = ({
         }}
       >
         {/* ドラッグハンドル */}
-        <TableCell sx={{ width: 40, py: 1, pl: 2, pr: 0 }}>
-          <Tooltip title="ドラッグして大分類の順序を変更" arrow>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                cursor: 'grab',
-                color: 'action.active',
-                '&:active': { cursor: 'grabbing' },
-              }}
-            >
-              <DragIndicatorIcon fontSize="small" />
-            </Box>
-          </Tooltip>
+        <TableCell sx={{ width: { xs: 28, sm: 40 }, py: 1, pl: { xs: 1, sm: 2 }, pr: 0 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              cursor: 'grab',
+              color: 'action.active',
+              '&:active': { cursor: 'grabbing' },
+            }}
+          >
+            <DragIndicatorIcon fontSize="small" sx={{ fontSize: { xs: 18, sm: 20 } }} />
+          </Box>
         </TableCell>
 
         {/* 展開ボタン */}
-        <TableCell sx={{ width: 44, py: 1, px: 0 }}>
+        <TableCell sx={{ width: { xs: 32, sm: 44 }, py: 1, px: 0 }}>
           <IconButton size="small" onClick={onToggleExpand} aria-label="展開・折りたたみ">
             {isExpanded ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
           </IconButton>
         </TableCell>
 
         {/* 色（クリックで色変更） */}
-        <TableCell sx={{ width: 48, py: 1, px: 1 }}>
-          <ColorPicker color={type.color} onChange={onColorChange} size={24} />
+        <TableCell sx={{ width: { xs: 36, sm: 48 }, py: 1, px: { xs: 0.5, sm: 1 } }}>
+          <ColorPicker color={type.color} onChange={onColorChange} size={isMobile ? 20 : 24} />
         </TableCell>
 
         {/* 分類名（クリックで名前編集） */}
-        <TableCell sx={{ py: 1, px: 1.5 }}>
+        <TableCell sx={{ py: 1, px: { xs: 0.5, sm: 1.5 } }}>
           <Tooltip title="クリックして大分類名を編集" arrow>
             <Typography
               component="span"
               onClick={onEditName}
               sx={{
                 fontWeight: 'bold',
-                fontSize: '0.95rem',
+                fontSize: { xs: '0.875rem', sm: '0.95rem' },
                 cursor: 'pointer',
                 display: 'inline-block',
                 px: 1,
@@ -476,10 +528,18 @@ const TypeRow = ({
         </TableCell>
 
         {/* 操作 */}
-        <TableCell align="right" sx={{ py: 1, pr: 2 }}>
-          <Button size="small" variant="text" startIcon={<AddIcon />} onClick={onAddSubtype} sx={{ mr: 1 }}>
-            小分類を追加
-          </Button>
+        <TableCell align="right" sx={{ py: 1, pr: { xs: 1, sm: 2 }, whiteSpace: 'nowrap' }}>
+          {isMobile ? (
+            <Tooltip title="小分類を追加" arrow>
+              <IconButton size="small" color="primary" onClick={onAddSubtype} sx={{ mr: 0.5 }}>
+                <AddIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          ) : (
+            <Button size="small" variant="text" startIcon={<AddIcon />} onClick={onAddSubtype} sx={{ mr: 1 }}>
+              小分類を追加
+            </Button>
+          )}
           <IconButton size="small" color="error" title="大分類を削除" onClick={onDelete}>
             <DeleteIcon fontSize="small" />
           </IconButton>
@@ -490,7 +550,7 @@ const TypeRow = ({
       <TableRow>
         <TableCell colSpan={5} sx={{ py: 0, px: 0, bgcolor: '#fafafa' }}>
           <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-            <Box sx={{ py: 1, pl: 7, pr: 2 }}>
+            <Box sx={{ py: 1, pl: { xs: 2, sm: 7 }, pr: { xs: 1, sm: 2 } }}>
               <Table size="small" sx={{ bgcolor: '#ffffff', border: '1px solid #e0e0e0', borderRadius: 1 }}>
                 <TableBody>
                   {subtypes.map((subtype, sIndex) => (
@@ -503,30 +563,28 @@ const TypeRow = ({
                       onDrop={() => onSubtypeDrop(type.id, sIndex)}
                     >
                       {/* 小分類ドラッグハンドル */}
-                      <TableCell sx={{ width: 36, py: 0.75, pl: 1.5, pr: 0 }}>
-                        <Tooltip title="ドラッグして小分類の順序を変更" arrow>
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              cursor: 'grab',
-                              color: 'action.active',
-                              '&:active': { cursor: 'grabbing' },
-                            }}
-                          >
-                            <DragIndicatorIcon fontSize="small" sx={{ fontSize: 18 }} />
-                          </Box>
-                        </Tooltip>
+                      <TableCell sx={{ width: { xs: 28, sm: 36 }, py: 0.75, pl: { xs: 1, sm: 1.5 }, pr: 0 }}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            cursor: 'grab',
+                            color: 'action.active',
+                            '&:active': { cursor: 'grabbing' },
+                          }}
+                        >
+                          <DragIndicatorIcon fontSize="small" sx={{ fontSize: 18 }} />
+                        </Box>
                       </TableCell>
 
                       {/* 小分類名（クリックで名前編集） */}
-                      <TableCell sx={{ py: 0.75, px: 1 }}>
+                      <TableCell sx={{ py: 0.75, px: { xs: 0.5, sm: 1 } }}>
                         <Tooltip title="クリックして小分類名を編集" arrow>
                           <Typography
                             component="span"
                             onClick={() => onEditSubtypeName(subtype)}
                             sx={{
-                              fontSize: '0.875rem',
+                              fontSize: { xs: '0.8rem', sm: '0.875rem' },
                               cursor: 'pointer',
                               display: 'inline-block',
                               px: 1,
@@ -544,7 +602,7 @@ const TypeRow = ({
                       </TableCell>
 
                       {/* 小分類操作 */}
-                      <TableCell align="right" sx={{ py: 0.75, pr: 1.5 }}>
+                      <TableCell align="right" sx={{ py: 0.75, pr: { xs: 1, sm: 1.5 } }}>
                         <IconButton
                           size="small"
                           color="error"
@@ -558,7 +616,7 @@ const TypeRow = ({
                   ))}
                   {subtypes.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={3} sx={{ py: 1.5, textAlign: 'center', color: 'text.secondary' }}>
+                      <TableCell colSpan={3} sx={{ py: 1.5, textAlign: 'center', color: 'text.secondary', fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
                         小分類がまだありません。「小分類を追加」から登録してください。
                       </TableCell>
                     </TableRow>

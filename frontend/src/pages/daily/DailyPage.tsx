@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { Box, Tabs, Tab, Typography } from '@mui/material';
+import { useState } from 'react';
+import type { SyntheticEvent, ReactNode } from 'react';
+import { Box, Tabs, Tab, Typography, useTheme, useMediaQuery } from '@mui/material';
 import RecordTab from './RecordTab';
 import StatsTab from './StatsTab';
 import TypesTab from './TypesTab';
 
-function CustomTabPanel(props: { children?: React.ReactNode; index: number; value: number }) {
+function CustomTabPanel(props: { children?: ReactNode; index: number; value: number }) {
   const { children, value, index, ...other } = props;
 
   return (
@@ -16,7 +17,7 @@ function CustomTabPanel(props: { children?: React.ReactNode; index: number; valu
       {...other}
     >
       {value === index && (
-        <Box sx={{ p: 3 }}>
+        <Box sx={{ py: { xs: 2, sm: 3 }, px: { xs: 0, sm: 1 } }}>
           {children}
         </Box>
       )}
@@ -26,16 +27,25 @@ function CustomTabPanel(props: { children?: React.ReactNode; index: number; valu
 
 const DailyPage = () => {
   const [value, setValue] = useState(0);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
+  const handleChange = (_event: SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Typography variant="h4" gutterBottom>デイリー</Typography>
+      <Typography variant={isMobile ? 'h5' : 'h4'} gutterBottom sx={{ fontWeight: 'bold' }}>
+        デイリー
+      </Typography>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={value} onChange={handleChange} aria-label="daily tabs">
+        <Tabs
+          value={value}
+          onChange={handleChange}
+          variant={isMobile ? 'fullWidth' : 'standard'}
+          aria-label="daily tabs"
+        >
           <Tab label="記録" />
           <Tab label="統計" />
           <Tab label="タイプ" />

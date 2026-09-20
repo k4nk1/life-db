@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import {
   AppBar,
@@ -82,8 +82,8 @@ export default function Layout() {
       <AppBar
         position="fixed"
         sx={{
-          width: { sm: \calc(100% - \px)\ },
-          ml: { sm: \px\ },
+          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          ml: { sm: `${drawerWidth}px` },
         }}
       >
         <Toolbar>
@@ -135,7 +135,7 @@ export default function Layout() {
       </Box>
       <Box
         component="main"
-        sx={{ flexGrow: 1, p: { xs: 2, sm: 3 }, width: { sm: \calc(100% - \px)\ } }}
+        sx={{ flexGrow: 1, p: { xs: 2, sm: 3 }, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
         <Toolbar /> {/* Spacer for fixed AppBar */}
         <Outlet />
