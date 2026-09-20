@@ -18,12 +18,14 @@ import tasksRouter from './routes/tasks';
 import factsRouter from './routes/facts';
 import dontsRouter from './routes/donts';
 import documentsRouter from './routes/documents';
+import assetsRouter from './routes/assets';
 
 app.use('/api/daily', dailyRouter);
 app.use('/api/tasks', tasksRouter);
 app.use('/api/facts', factsRouter);
 app.use('/api/donts', dontsRouter);
 app.use('/api/documents', documentsRouter);
+app.use('/api/assets', assetsRouter);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
