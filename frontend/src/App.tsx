@@ -5,6 +5,7 @@ import TasksPage from './pages/tasks/TasksPage';
 import FactsPage from './pages/facts/FactsPage';
 import DontsPage from './pages/donts/DontsPage';
 import DocumentsPage from './pages/documents/DocumentsPage';
+import AssetsPage from './pages/assets/AssetsPage';
 
 function App() {
   return (
@@ -17,7 +18,7 @@ function App() {
           <Route path="facts" element={<FactsPage />} />
           <Route path="donts" element={<DontsPage />} />
           <Route path="documents" element={<DocumentsPage />} />
-          <Route path="assets" element={<div>資産（未実装）</div>} />
+          <Route path="assets" element={<AssetsPage />} />
         </Route>
       </Routes>
     </Router>
