@@ -18,6 +18,8 @@ import {
   DialogActions,
   TextField,
   Chip,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -27,6 +29,9 @@ import { factsApi } from '../../api/facts';
 import type { Tag } from '../../../../shared/types/facts';
 
 const TagsTab = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   const [tags, setTags] = useState<Tag[]>([]);
   const [draggedTagIndex, setDraggedTagIndex] = useState<number | null>(null);
 
@@ -140,16 +145,17 @@ const TagsTab = () => {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1.5 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
         <Button
           variant="contained"
           size="small"
-          startIcon={<AddIcon />}
+          startIcon={<AddIcon fontSize="small" />}
           onClick={() => {
             setNewTagName('');
             setNewTagColor(PRESET_COLORS[Math.floor(Math.random() * PRESET_COLORS.length)] ?? '#1976d2');
             setOpenAddDialog(true);
           }}
+          sx={{ py: 0.35, px: 1.25, fontSize: { xs: '0.75rem', sm: '0.8125rem' } }}
         >
           タグを追加
         </Button>
@@ -158,11 +164,11 @@ const TagsTab = () => {
       <TableContainer component={Paper} variant="outlined" sx={{ bgcolor: '#ffffff' }}>
         <Table size="small">
           <TableHead sx={{ bgcolor: '#f5f5f5' }}>
-            <TableRow>
-              <TableCell sx={{ width: 40, py: 0.5 }}></TableCell>
-              <TableCell sx={{ width: 50, py: 0.5, fontWeight: 'bold' }}>色</TableCell>
-              <TableCell sx={{ py: 0.5, fontWeight: 'bold' }}>タグ名</TableCell>
-              <TableCell align="right" sx={{ width: 60, py: 0.5 }}></TableCell>
+            <TableRow sx={{ '& > *': { py: 0.3, px: { xs: 0.5, sm: 1 }, fontSize: '0.75rem' } }}>
+              <TableCell sx={{ width: { xs: 28, sm: 36 } }}></TableCell>
+              <TableCell sx={{ width: { xs: 36, sm: 48 }, fontWeight: 'bold' }}>色</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>タグ名</TableCell>
+              <TableCell align="right" sx={{ width: { xs: 36, sm: 48 } }}></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -177,11 +183,11 @@ const TagsTab = () => {
                 sx={{
                   bgcolor: '#ffffff',
                   transition: 'background-color 0.2s',
-                  '& > *': { py: 0.5 },
+                  '& > *': { py: 0.25, px: { xs: 0.5, sm: 1 } },
                 }}
               >
                 {/* ドラッグハンドル */}
-                <TableCell sx={{ width: 40, py: 0.5 }}>
+                <TableCell sx={{ width: { xs: 28, sm: 36 } }}>
                   <Tooltip title="ドラッグして順序を変更" arrow>
                     <Box
                       sx={{
@@ -192,18 +198,18 @@ const TagsTab = () => {
                         '&:active': { cursor: 'grabbing' },
                       }}
                     >
-                      <DragIndicatorIcon fontSize="small" />
+                      <DragIndicatorIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
                     </Box>
                   </Tooltip>
                 </TableCell>
 
                 {/* カラーピッカー */}
-                <TableCell sx={{ width: 50, py: 0.5 }}>
-                  <ColorPicker color={tag.color} onChange={(c) => handleUpdateColor(tag.id, c)} size={22} />
+                <TableCell sx={{ width: { xs: 36, sm: 48 } }}>
+                  <ColorPicker color={tag.color} onChange={(c) => handleUpdateColor(tag.id, c)} size={isMobile ? 18 : 22} />
                 </TableCell>
 
                 {/* タグ名（インライン編集） */}
-                <TableCell sx={{ py: 0.5 }}>
+                <TableCell>
                   {editingTagId === tag.id ? (
                     <TextField
                       size="small"
@@ -216,7 +222,7 @@ const TagsTab = () => {
                         if (e.key === 'Enter') handleSaveInlineName(tag.id);
                         if (e.key === 'Escape') setEditingTagId(null);
                       }}
-                      sx={{ width: '100%', maxWidth: 300 }}
+                      sx={{ width: '100%', maxWidth: 300, '& .MuiInputBase-input': { py: 0.15, fontSize: '0.85rem' } }}
                     />
                   ) : (
                     <Typography
@@ -227,9 +233,10 @@ const TagsTab = () => {
                       }}
                       sx={{
                         fontWeight: '500',
+                        fontSize: { xs: '0.8rem', sm: '0.875rem' },
                         cursor: 'pointer',
                         display: 'inline-block',
-                        py: 0.25,
+                        py: 0.15,
                         px: 0.5,
                         borderRadius: 1,
                         '&:hover': {
@@ -244,21 +251,22 @@ const TagsTab = () => {
                 </TableCell>
 
                 {/* 削除ボタン */}
-                <TableCell align="right" sx={{ width: 60, py: 0.5 }}>
+                <TableCell align="right" sx={{ width: { xs: 36, sm: 48 } }}>
                   <IconButton
                     size="small"
                     color="error"
                     title="タグを削除"
                     onClick={() => handleDeleteTag(tag.id)}
+                    sx={{ p: 0.2 }}
                   >
-                    <DeleteIcon fontSize="small" />
+                    <DeleteIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
                   </IconButton>
                 </TableCell>
               </TableRow>
             ))}
             {tags.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4} sx={{ py: 3, textAlign: 'center', color: 'text.secondary' }}>
+                <TableCell colSpan={4} sx={{ py: 2, textAlign: 'center', color: 'text.secondary', fontSize: '0.8rem' }}>
                   タグがまだ登録されていません。「タグを追加」から登録してください。
                 </TableCell>
               </TableRow>
@@ -268,9 +276,15 @@ const TagsTab = () => {
       </TableContainer>
 
       {/* タグ追加ダイアログ */}
-      <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)} maxWidth="xs" fullWidth>
-        <DialogTitle>新しいタグを追加</DialogTitle>
-        <DialogContent sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Dialog
+        open={openAddDialog}
+        onClose={() => setOpenAddDialog(false)}
+        maxWidth="xs"
+        fullWidth
+        fullScreen={isMobile}
+      >
+        <DialogTitle sx={{ py: { xs: 1.5, sm: 2 } }}>新しいタグを追加</DialogTitle>
+        <DialogContent sx={{ pt: { xs: 1.5, sm: 2 }, display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField
             autoFocus
             label="タグ名"
@@ -283,7 +297,7 @@ const TagsTab = () => {
             <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
               カラー:
             </Typography>
-            <ColorPicker color={newTagColor} onChange={setNewTagColor} size={26} />
+            <ColorPicker color={newTagColor} onChange={setNewTagColor} size={24} />
             <Chip
               label={newTagName.trim() || 'プレビュー'}
               size="small"
@@ -296,7 +310,7 @@ const TagsTab = () => {
             />
           </Box>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ px: 2, py: 1.5 }}>
           <Button onClick={() => setOpenAddDialog(false)}>キャンセル</Button>
           <Button onClick={handleCreateTag} variant="contained" disabled={!newTagName.trim()}>
             追加

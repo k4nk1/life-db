@@ -11,7 +11,6 @@ import {
   TableRow,
   IconButton,
   Typography,
-  Tooltip,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -22,6 +21,9 @@ import {
   InputAdornment,
   CircularProgress,
   Popover,
+  Stack,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
@@ -36,6 +38,9 @@ import { factsApi } from '../../api/facts';
 import type { Tag, FactEntryItem } from '../../../../shared/types/facts';
 
 const ListTab = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   const [entries, setEntries] = useState<FactEntryItem[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(false);
@@ -291,14 +296,14 @@ const ListTab = () => {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          mb: 1.5,
-          gap: 1,
-          flexWrap: 'wrap',
+          mb: 1,
+          gap: 0.75,
+          width: '100%',
         }}
       >
         {/* 検索バー */}
         <TextField
-          placeholder="タイトルや内容で検索..."
+          placeholder="検索..."
           size="small"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -306,134 +311,433 @@ const ListTab = () => {
             input: {
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon color="action" fontSize="small" />
+                  <SearchIcon color="action" sx={{ fontSize: 18 }} />
                 </InputAdornment>
               ),
             },
           }}
-          sx={{ width: 280, '& .MuiInputBase-input': { py: 0.5 } }}
+          sx={{
+            flexGrow: 1,
+            minWidth: 0,
+            maxWidth: { sm: 300 },
+            '& .MuiInputBase-input': { py: 0.4, fontSize: '0.85rem' },
+          }}
         />
 
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center', flexShrink: 0 }}>
           {/* タグ絞り込みボタン */}
           <Button
             variant={selectedTagIds.length > 0 ? 'contained' : 'outlined'}
             color={selectedTagIds.length > 0 ? 'primary' : 'inherit'}
             size="small"
-            startIcon={<FilterListIcon fontSize="small" />}
+            startIcon={<FilterListIcon sx={{ fontSize: 16 }} />}
             onClick={(e) => setFilterAnchor(e.currentTarget)}
-            sx={{ py: 0.5 }}
+            sx={{
+              py: 0.4,
+              px: { xs: 0.75, sm: 1.25 },
+              minWidth: 0,
+              fontSize: '0.75rem',
+              whiteSpace: 'nowrap',
+            }}
           >
-            タグ絞り込み{selectedTagIds.length > 0 ? ` (${selectedTagIds.length})` : ''}
+            {isMobile
+              ? `タグ${selectedTagIds.length > 0 ? `(${selectedTagIds.length})` : ''}`
+              : `タグ絞り込み${selectedTagIds.length > 0 ? ` (${selectedTagIds.length})` : ''}`}
           </Button>
-
-          {/* タグ絞り込み Popover */}
-          <Popover
-            open={Boolean(filterAnchor)}
-            anchorEl={filterAnchor}
-            onClose={() => setFilterAnchor(null)}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-          >
-            <Box sx={{ p: 1.5, maxWidth: 280 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
-                  タグでフィルタ
-                </Typography>
-                {selectedTagIds.length > 0 && (
-                  <Button
-                    size="small"
-                    variant="text"
-                    color="inherit"
-                    onClick={() => setSelectedTagIds([])}
-                    sx={{ fontSize: '0.7rem', p: 0 }}
-                  >
-                    クリア
-                  </Button>
-                )}
-              </Box>
-              {tags.length > 0 ? (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                  {tags.map((tag) => {
-                    const isSelected = selectedTagIds.includes(tag.id);
-                    return (
-                      <Chip
-                        key={tag.id}
-                        label={tag.name}
-                        size="small"
-                        onClick={() => handleToggleTagFilter(tag.id)}
-                        sx={{
-                          cursor: 'pointer',
-                          bgcolor: isSelected ? tag.color : 'transparent',
-                          color: isSelected ? '#ffffff' : 'text.primary',
-                          borderColor: tag.color,
-                          borderWidth: 1,
-                          borderStyle: 'solid',
-                          fontWeight: isSelected ? 'bold' : 'normal',
-                          fontSize: '0.75rem',
-                          height: 24,
-                        }}
-                      />
-                    );
-                  })}
-                </Box>
-              ) : (
-                <Typography variant="caption" color="text.secondary">
-                  タグが登録されていません。
-                </Typography>
-              )}
-            </Box>
-          </Popover>
 
           {/* 新規エントリー作成ボタン */}
           <Button
             variant="contained"
             color="primary"
             size="small"
-            startIcon={<AddIcon fontSize="small" />}
+            startIcon={<AddIcon sx={{ fontSize: 16 }} />}
             onClick={() => {
               setNewTitle('');
               setNewContent('');
               setNewSelectedTagIds([]);
               setOpenCreateDialog(true);
             }}
-            sx={{ py: 0.5 }}
+            sx={{
+              py: 0.4,
+              px: { xs: 1, sm: 1.5 },
+              minWidth: 0,
+              fontSize: '0.75rem',
+              whiteSpace: 'nowrap',
+            }}
           >
-            エントリーを追加
+            {isMobile ? '追加' : 'エントリーを追加'}
           </Button>
         </Box>
       </Box>
 
-      {/* エントリー一覧テーブル */}
-      <TableContainer component={Paper} variant="outlined" sx={{ bgcolor: '#ffffff' }}>
-        <Table size="small">
-          <TableHead sx={{ bgcolor: '#f5f5f5' }}>
-            <TableRow>
-              <TableCell sx={{ width: 36, py: 0.5 }}></TableCell>
-              <TableCell sx={{ width: '25%', py: 0.5, fontWeight: 'bold' }}>タイトル</TableCell>
-              <TableCell sx={{ width: '20%', py: 0.5, fontWeight: 'bold' }}>タグ</TableCell>
-              <TableCell sx={{ py: 0.5, fontWeight: 'bold' }}>内容</TableCell>
-              <TableCell sx={{ width: 130, py: 0.5, fontWeight: 'bold' }}>作成日時</TableCell>
-              <TableCell align="right" sx={{ width: 48, py: 0.5 }}></TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {loading && entries.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} sx={{ py: 3, textAlign: 'center' }}>
-                  <CircularProgress size={24} />
-                </TableCell>
+      {/* タグ絞り込み Popover */}
+      <Popover
+        open={Boolean(filterAnchor)}
+        anchorEl={filterAnchor}
+        onClose={() => setFilterAnchor(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Box sx={{ p: 1.25, maxWidth: 280 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.75 }}>
+            <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
+              タグでフィルタ
+            </Typography>
+            {selectedTagIds.length > 0 && (
+              <Button
+                size="small"
+                variant="text"
+                color="inherit"
+                onClick={() => setSelectedTagIds([])}
+                sx={{ fontSize: '0.7rem', p: 0 }}
+              >
+                クリア
+              </Button>
+            )}
+          </Box>
+          {tags.length > 0 ? (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+              {tags.map((tag) => {
+                const isSelected = selectedTagIds.includes(tag.id);
+                return (
+                  <Chip
+                    key={tag.id}
+                    label={tag.name}
+                    size="small"
+                    onClick={() => handleToggleTagFilter(tag.id)}
+                    sx={{
+                      cursor: 'pointer',
+                      bgcolor: isSelected ? tag.color : 'transparent',
+                      color: isSelected ? '#ffffff' : 'text.primary',
+                      borderColor: tag.color,
+                      borderWidth: 1,
+                      borderStyle: 'solid',
+                      fontWeight: isSelected ? 'bold' : 'normal',
+                      fontSize: '0.72rem',
+                      height: 22,
+                    }}
+                  />
+                );
+              })}
+            </Box>
+          ) : (
+            <Typography variant="caption" color="text.secondary">
+              タグが登録されていません。
+            </Typography>
+          )}
+        </Box>
+      </Popover>
+
+      {/* エントリー表示: スマホ時はコンパクトカードリスト、PC時は超コンパクトテーブル */}
+      {loading && entries.length === 0 ? (
+        <Box sx={{ py: 3, textAlign: 'center' }}>
+          <CircularProgress size={24} />
+        </Box>
+      ) : entries.length === 0 ? (
+        <Paper variant="outlined" sx={{ py: 3, textAlign: 'center', color: 'text.secondary', fontSize: '0.85rem' }}>
+          {searchQuery || selectedTagIds.length > 0
+            ? '条件に合致するエントリーが見つかりませんでした'
+            : 'エントリーがまだありません。「エントリーを追加」から登録してください'}
+        </Paper>
+      ) : isMobile ? (
+        /* モバイル向け: 縦余白極小のコンパクトカードリスト */
+        <Stack spacing={0.5}>
+          {entries.map((entry) => {
+            const isExpanded = Boolean(expandedIds[entry.id]);
+            const supplements = entry.supplements || [];
+
+            return (
+              <Paper
+                key={entry.id}
+                variant="outlined"
+                sx={{
+                  p: 0.75,
+                  bgcolor: isExpanded ? '#fafbfd' : '#ffffff',
+                  borderColor: isExpanded ? 'primary.light' : 'divider',
+                  transition: 'background-color 0.15s, border-color 0.15s',
+                }}
+              >
+                {/* 1行目: [展開ボタン] [タイトル] [補足数] [削除ボタン] */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <IconButton
+                    size="small"
+                    onClick={() => toggleExpand(entry.id)}
+                    sx={{ p: 0.15 }}
+                    aria-label="展開"
+                  >
+                    {isExpanded ? (
+                      <KeyboardArrowDownIcon sx={{ fontSize: 18 }} />
+                    ) : (
+                      <KeyboardArrowRightIcon sx={{ fontSize: 18 }} />
+                    )}
+                  </IconButton>
+
+                  {editingTitleId === entry.id ? (
+                    <TextField
+                      size="small"
+                      variant="standard"
+                      value={titleValue}
+                      autoFocus
+                      onChange={(e) => setTitleValue(e.target.value)}
+                      onBlur={() => handleSaveTitle(entry.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSaveTitle(entry.id);
+                        if (e.key === 'Escape') setEditingTitleId(null);
+                      }}
+                      sx={{ flexGrow: 1, '& .MuiInputBase-input': { py: 0.1, fontSize: '0.85rem' } }}
+                    />
+                  ) : (
+                    <Typography
+                      variant="body2"
+                      onClick={() => {
+                        setEditingTitleId(entry.id);
+                        setTitleValue(entry.title);
+                      }}
+                      sx={{
+                        fontWeight: 'bold',
+                        fontSize: '0.85rem',
+                        cursor: 'pointer',
+                        flexGrow: 1,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      {entry.title}
+                    </Typography>
+                  )}
+
+                  {supplements.length > 0 && (
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{
+                        bgcolor: 'action.hover',
+                        px: 0.4,
+                        py: 0.1,
+                        borderRadius: 0.5,
+                        fontSize: '0.68rem',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {supplements.length}
+                    </Typography>
+                  )}
+
+                  <IconButton
+                    size="small"
+                    color="error"
+                    onClick={() => handleDeleteEntry(entry.id)}
+                    sx={{ p: 0.15, flexShrink: 0 }}
+                    title="削除"
+                  >
+                    <DeleteIcon sx={{ fontSize: 16 }} />
+                  </IconButton>
+                </Box>
+
+                {/* 2行目: [タグ一覧] [作成日時] */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 0.25, pl: 3.25 }}>
+                  <Box
+                    onClick={(e) => {
+                      setTagPopoverAnchor({
+                        el: e.currentTarget,
+                        entryId: entry.id,
+                        tagIds: entry.tags.map((t) => t.id),
+                      });
+                    }}
+                    sx={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 0.35,
+                      alignItems: 'center',
+                      cursor: 'pointer',
+                      minHeight: 18,
+                    }}
+                  >
+                    {entry.tags && entry.tags.length > 0 ? (
+                      entry.tags.map((tag) => (
+                        <Chip
+                          key={tag.id}
+                          label={tag.name}
+                          size="small"
+                          sx={{
+                            bgcolor: tag.color,
+                            color: '#ffffff',
+                            fontSize: '0.65rem',
+                            fontWeight: 'bold',
+                            height: 18,
+                            px: 0.25,
+                          }}
+                        />
+                      ))
+                    ) : (
+                      <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic', fontSize: '0.7rem' }}>
+                        + タグ
+                      </Typography>
+                    )}
+                  </Box>
+
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.68rem', flexShrink: 0 }}>
+                    {formatDate(entry.createdAt)}
+                  </Typography>
+                </Box>
+
+                {/* 3行目: [内容]（存在時または編集中） */}
+                {(entry.content || editingContentId === entry.id) && (
+                  <Box sx={{ mt: 0.25, pl: 3.25 }}>
+                    {editingContentId === entry.id ? (
+                      <TextField
+                        size="small"
+                        variant="standard"
+                        value={contentValue}
+                        multiline
+                        autoFocus
+                        onChange={(e) => setContentValue(e.target.value)}
+                        onBlur={() => handleSaveContent(entry.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                            handleSaveContent(entry.id);
+                          }
+                          if (e.key === 'Escape') setEditingContentId(null);
+                        }}
+                        sx={{ width: '100%', '& .MuiInputBase-input': { py: 0.1, fontSize: '0.78rem' } }}
+                      />
+                    ) : (
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        onClick={() => {
+                          setEditingContentId(entry.id);
+                          setContentValue(entry.content || '');
+                        }}
+                        sx={{
+                          fontSize: '0.78rem',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {entry.content}
+                      </Typography>
+                    )}
+                  </Box>
+                )}
+
+                {/* 展開時: 補足エリア */}
+                <Collapse in={isExpanded} timeout="auto" unmountOnExit>
+                  <Box sx={{ mt: 0.75, pt: 0.5, pl: 3.25, borderTop: '1px dashed #e0e0e0' }}>
+                    {supplements.map((supplement) => (
+                      <Box
+                        key={supplement.id}
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          py: 0.2,
+                          px: 0.5,
+                          borderRadius: 0.5,
+                          '&:hover': { bgcolor: '#f0f4f8' },
+                        }}
+                      >
+                        {editingSupplementId === supplement.id ? (
+                          <TextField
+                            size="small"
+                            variant="standard"
+                            value={editingSupplementText}
+                            autoFocus
+                            onChange={(e) => setEditingSupplementText(e.target.value)}
+                            onBlur={() => handleSaveSupplement(entry.id, supplement.id)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleSaveSupplement(entry.id, supplement.id);
+                              if (e.key === 'Escape') setEditingSupplementId(null);
+                            }}
+                            sx={{ flexGrow: 1, mr: 1, '& .MuiInputBase-input': { py: 0.1, fontSize: '0.78rem' } }}
+                          />
+                        ) : (
+                          <Typography
+                            variant="body2"
+                            onClick={() => {
+                              setEditingSupplementId(supplement.id);
+                              setEditingSupplementText(supplement.content);
+                            }}
+                            sx={{
+                              fontSize: '0.78rem',
+                              whiteSpace: 'pre-wrap',
+                              flexGrow: 1,
+                              mr: 1,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {supplement.content}
+                          </Typography>
+                        )}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.68rem' }}>
+                            {formatDate(supplement.createdAt)}
+                          </Typography>
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={() => handleDeleteSupplement(supplement.id)}
+                            sx={{ p: 0.1 }}
+                          >
+                            <DeleteIcon sx={{ fontSize: 14 }} />
+                          </IconButton>
+                        </Box>
+                      </Box>
+                    ))}
+
+                    {/* 補足入力 */}
+                    <Box sx={{ display: 'flex', gap: 0.5, mt: 0.5, alignItems: 'center' }}>
+                      <TextField
+                        size="small"
+                        fullWidth
+                        placeholder="補足を追加..."
+                        value={newSupplementTexts[entry.id] || ''}
+                        onChange={(e) =>
+                          setNewSupplementTexts((prev) => ({ ...prev, [entry.id]: e.target.value }))
+                        }
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleAddSupplement(entry.id);
+                          }
+                        }}
+                        sx={{ '& .MuiInputBase-input': { py: 0.25, fontSize: '0.78rem' } }}
+                      />
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => handleAddSupplement(entry.id)}
+                        disabled={!newSupplementTexts[entry.id]?.trim()}
+                        sx={{ minWidth: 48, py: 0.25, px: 1, fontSize: '0.72rem' }}
+                      >
+                        追加
+                      </Button>
+                    </Box>
+                  </Box>
+                </Collapse>
+              </Paper>
+            );
+          })}
+        </Stack>
+      ) : (
+        /* デスクトップ向け: 縦余白極小の超コンパクトテーブル（一画面で大量に見れる） */
+        <TableContainer component={Paper} variant="outlined" sx={{ bgcolor: '#ffffff' }}>
+          <Table size="small">
+            <TableHead sx={{ bgcolor: '#f5f5f5' }}>
+              <TableRow sx={{ '& > *': { py: 0.25, px: 0.75, fontSize: '0.75rem', fontWeight: 'bold' } }}>
+                <TableCell sx={{ width: 32 }}></TableCell>
+                <TableCell sx={{ width: '25%' }}>タイトル</TableCell>
+                <TableCell sx={{ width: '20%' }}>タグ</TableCell>
+                <TableCell>内容</TableCell>
+                <TableCell sx={{ width: 120 }}>作成日時</TableCell>
+                <TableCell align="right" sx={{ width: 40 }}></TableCell>
               </TableRow>
-            ) : entries.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} sx={{ py: 3, textAlign: 'center', color: 'text.secondary' }}>
-                  {searchQuery || selectedTagIds.length > 0
-                    ? '条件に合致するエントリーが見つかりませんでした'
-                    : 'エントリーがまだありません。「エントリーを追加」から登録してください'}
-                </TableCell>
-              </TableRow>
-            ) : (
-              entries.map((entry) => {
+            </TableHead>
+            <TableBody>
+              {entries.map((entry) => {
                 const isExpanded = Boolean(expandedIds[entry.id]);
                 const supplements = entry.supplements || [];
 
@@ -442,29 +746,29 @@ const ListTab = () => {
                     <TableRow
                       hover
                       sx={{
-                        '& > *': { borderBottom: 'unset', py: 0.5 },
+                        '& > *': { borderBottom: 'unset', py: 0.2, px: 0.75 },
                         bgcolor: isExpanded ? '#fafbfd' : '#ffffff',
-                        transition: 'background-color 0.2s',
+                        transition: 'background-color 0.15s',
                       }}
                     >
                       {/* 展開トグル */}
-                      <TableCell sx={{ width: 36, py: 0.5, px: 0.5 }}>
+                      <TableCell sx={{ width: 32, p: 0.1 }}>
                         <IconButton
                           size="small"
                           onClick={() => toggleExpand(entry.id)}
                           aria-label="補足を展開・折りたたみ"
-                          sx={{ p: 0.25 }}
+                          sx={{ p: 0.1 }}
                         >
                           {isExpanded ? (
-                            <KeyboardArrowDownIcon fontSize="small" />
+                            <KeyboardArrowDownIcon sx={{ fontSize: 18 }} />
                           ) : (
-                            <KeyboardArrowRightIcon fontSize="small" />
+                            <KeyboardArrowRightIcon sx={{ fontSize: 18 }} />
                           )}
                         </IconButton>
                       </TableCell>
 
                       {/* タイトル（インライン編集） */}
-                      <TableCell sx={{ py: 0.5, px: 1 }}>
+                      <TableCell>
                         {editingTitleId === entry.id ? (
                           <TextField
                             size="small"
@@ -477,7 +781,7 @@ const ListTab = () => {
                               if (e.key === 'Enter') handleSaveTitle(entry.id);
                               if (e.key === 'Escape') setEditingTitleId(null);
                             }}
-                            sx={{ width: '100%' }}
+                            sx={{ width: '100%', '& .MuiInputBase-input': { py: 0.1, fontSize: '0.8125rem' } }}
                           />
                         ) : (
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -489,10 +793,11 @@ const ListTab = () => {
                               }}
                               sx={{
                                 fontWeight: '500',
+                                fontSize: '0.8125rem',
                                 cursor: 'pointer',
-                                py: 0.25,
-                                px: 0.5,
-                                borderRadius: 1,
+                                py: 0.1,
+                                px: 0.4,
+                                borderRadius: 0.5,
                                 '&:hover': { bgcolor: 'action.hover', textDecoration: 'underline' },
                               }}
                             >
@@ -502,7 +807,7 @@ const ListTab = () => {
                               <Typography
                                 variant="caption"
                                 color="text.secondary"
-                                sx={{ bgcolor: 'action.hover', px: 0.5, borderRadius: 0.5, fontSize: '0.7rem' }}
+                                sx={{ bgcolor: 'action.hover', px: 0.4, py: 0.05, borderRadius: 0.5, fontSize: '0.68rem' }}
                               >
                                 {supplements.length}
                               </Typography>
@@ -512,7 +817,7 @@ const ListTab = () => {
                       </TableCell>
 
                       {/* タグ一覧（クリックでタグ編集ポップオーバー表示） */}
-                      <TableCell sx={{ py: 0.5, px: 1 }}>
+                      <TableCell>
                         <Box
                           onClick={(e) => {
                             setTagPopoverAnchor({
@@ -524,12 +829,12 @@ const ListTab = () => {
                           sx={{
                             display: 'flex',
                             flexWrap: 'wrap',
-                            gap: 0.5,
+                            gap: 0.3,
                             alignItems: 'center',
                             cursor: 'pointer',
-                            p: 0.25,
-                            borderRadius: 1,
-                            minHeight: 24,
+                            p: 0.1,
+                            borderRadius: 0.5,
+                            minHeight: 20,
                             '&:hover': { bgcolor: 'action.hover' },
                           }}
                         >
@@ -542,9 +847,10 @@ const ListTab = () => {
                                 sx={{
                                   bgcolor: tag.color,
                                   color: '#ffffff',
-                                  fontSize: '0.7rem',
+                                  fontSize: '0.68rem',
                                   fontWeight: 'bold',
-                                  height: 20,
+                                  height: 18,
+                                  px: 0.25,
                                 }}
                               />
                             ))
@@ -552,16 +858,16 @@ const ListTab = () => {
                             <Typography
                               variant="caption"
                               color="text.secondary"
-                              sx={{ fontStyle: 'italic', fontSize: '0.75rem' }}
+                              sx={{ fontStyle: 'italic', fontSize: '0.72rem' }}
                             >
-                              + タグ設定
+                              + タグ
                             </Typography>
                           )}
                         </Box>
                       </TableCell>
 
-                      {/* 内容（インライン編集） */}
-                      <TableCell sx={{ py: 0.5, px: 1 }}>
+                      {/* 内容（インライン編集・1行省略でコンパクト） */}
+                      <TableCell>
                         {editingContentId === entry.id ? (
                           <TextField
                             size="small"
@@ -577,7 +883,7 @@ const ListTab = () => {
                               }
                               if (e.key === 'Escape') setEditingContentId(null);
                             }}
-                            sx={{ width: '100%' }}
+                            sx={{ width: '100%', '& .MuiInputBase-input': { py: 0.1, fontSize: '0.78rem' } }}
                           />
                         ) : (
                           <Typography
@@ -588,17 +894,14 @@ const ListTab = () => {
                               setContentValue(entry.content || '');
                             }}
                             sx={{
-                              whiteSpace: 'pre-wrap',
-                              maxHeight: '3em',
+                              whiteSpace: 'nowrap',
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
-                              display: '-webkit-box',
-                              WebkitLineClamp: 2,
-                              WebkitBoxOrient: 'vertical',
+                              fontSize: '0.78rem',
                               cursor: 'pointer',
-                              py: 0.25,
-                              px: 0.5,
-                              borderRadius: 1,
+                              py: 0.1,
+                              px: 0.4,
+                              borderRadius: 0.5,
                               fontStyle: entry.content ? 'normal' : 'italic',
                               '&:hover': { bgcolor: 'action.hover' },
                             }}
@@ -609,32 +912,31 @@ const ListTab = () => {
                       </TableCell>
 
                       {/* 作成日時 */}
-                      <TableCell sx={{ py: 0.5, px: 1 }}>
-                        <Typography variant="caption" color="text.secondary">
+                      <TableCell>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.72rem' }}>
                           {formatDate(entry.createdAt)}
                         </Typography>
                       </TableCell>
 
-                      {/* 操作（削除ボタンのみ、編集ボタンなし） */}
-                      <TableCell align="right" sx={{ py: 0.5, px: 0.5 }}>
-                        <Tooltip title="削除" arrow>
-                          <IconButton
-                            size="small"
-                            color="error"
-                            onClick={() => handleDeleteEntry(entry.id)}
-                            sx={{ p: 0.25 }}
-                          >
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
+                      {/* 操作（削除ボタンのみ） */}
+                      <TableCell align="right" sx={{ width: 40, p: 0.1 }}>
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => handleDeleteEntry(entry.id)}
+                          sx={{ p: 0.15 }}
+                          title="削除"
+                        >
+                          <DeleteIcon sx={{ fontSize: 16 }} />
+                        </IconButton>
                       </TableCell>
                     </TableRow>
 
-                    {/* 展開時の補足行（縦スペース縮小・文言なし・番号なし・作成日時は削除ボタンのそば） */}
+                    {/* 展開時の補足行（縦スペース極小） */}
                     <TableRow>
                       <TableCell colSpan={6} sx={{ py: 0, px: 0, bgcolor: '#f8f9fa' }}>
                         <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-                          <Box sx={{ py: 1, pl: 5, pr: 2 }}>
+                          <Box sx={{ py: 0.5, pl: 4, pr: 1.5 }}>
                             {/* 補足リスト */}
                             {supplements.map((supplement) => (
                               <Box
@@ -643,8 +945,8 @@ const ListTab = () => {
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'space-between',
-                                  py: 0.25,
-                                  px: 1,
+                                  py: 0.15,
+                                  px: 0.75,
                                   borderRadius: 0.5,
                                   '&:hover': { bgcolor: '#eceff1' },
                                 }}
@@ -661,7 +963,7 @@ const ListTab = () => {
                                       if (e.key === 'Enter') handleSaveSupplement(entry.id, supplement.id);
                                       if (e.key === 'Escape') setEditingSupplementId(null);
                                     }}
-                                    sx={{ flexGrow: 1, mr: 2, '& .MuiInputBase-input': { py: 0.25, fontSize: '0.875rem' } }}
+                                    sx={{ flexGrow: 1, mr: 1, '& .MuiInputBase-input': { py: 0.1, fontSize: '0.78rem' } }}
                                   />
                                 ) : (
                                   <Typography
@@ -671,42 +973,39 @@ const ListTab = () => {
                                       setEditingSupplementText(supplement.content);
                                     }}
                                     sx={{
+                                      fontSize: '0.78rem',
                                       whiteSpace: 'pre-wrap',
                                       flexGrow: 1,
-                                      mr: 2,
+                                      mr: 1,
                                       cursor: 'pointer',
-                                      py: 0.25,
-                                      px: 0.5,
-                                      borderRadius: 0.5,
-                                      '&:hover': { bgcolor: 'action.hover', textDecoration: 'underline' },
                                     }}
                                   >
                                     {supplement.content}
                                   </Typography>
                                 )}
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
-                                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexShrink: 0 }}>
+                                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.68rem' }}>
                                     {formatDate(supplement.createdAt)}
                                   </Typography>
                                   <IconButton
                                     size="small"
                                     color="error"
                                     onClick={() => handleDeleteSupplement(supplement.id)}
+                                    sx={{ p: 0.1 }}
                                     title="補足を削除"
-                                    sx={{ p: 0.25 }}
                                   >
-                                    <DeleteIcon sx={{ fontSize: 16 }} />
+                                    <DeleteIcon sx={{ fontSize: 14 }} />
                                   </IconButton>
                                 </Box>
                               </Box>
                             ))}
 
-                            {/* 補足追加フォーム（コンパクト） */}
-                            <Box sx={{ display: 'flex', gap: 1, mt: 0.5, alignItems: 'center' }}>
+                            {/* 補足追加フォーム */}
+                            <Box sx={{ display: 'flex', gap: 0.5, mt: 0.35, alignItems: 'center' }}>
                               <TextField
                                 size="small"
                                 fullWidth
-                                placeholder="補足を入力してEnterで追加..."
+                                placeholder="補足を追加..."
                                 value={newSupplementTexts[entry.id] || ''}
                                 onChange={(e) =>
                                   setNewSupplementTexts((prev) => ({ ...prev, [entry.id]: e.target.value }))
@@ -717,14 +1016,14 @@ const ListTab = () => {
                                     handleAddSupplement(entry.id);
                                   }
                                 }}
-                                sx={{ '& .MuiInputBase-input': { py: 0.35, fontSize: '0.85rem' } }}
+                                sx={{ '& .MuiInputBase-input': { py: 0.2, fontSize: '0.78rem' } }}
                               />
                               <Button
                                 variant="contained"
                                 size="small"
                                 onClick={() => handleAddSupplement(entry.id)}
                                 disabled={!newSupplementTexts[entry.id]?.trim()}
-                                sx={{ minWidth: 60, py: 0.35, fontSize: '0.75rem' }}
+                                sx={{ minWidth: 48, py: 0.2, px: 1, fontSize: '0.72rem' }}
                               >
                                 追加
                               </Button>
@@ -735,11 +1034,11 @@ const ListTab = () => {
                     </TableRow>
                   </React.Fragment>
                 );
-              })
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
       {/* タグインライン編集用 Popover */}
       <Popover
@@ -748,8 +1047,8 @@ const ListTab = () => {
         onClose={() => setTagPopoverAnchor(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       >
-        <Box sx={{ p: 1.5, maxWidth: 260 }}>
-          <Typography variant="caption" sx={{ fontWeight: 'bold', display: 'block', mb: 1 }}>
+        <Box sx={{ p: 1.25, maxWidth: 260 }}>
+          <Typography variant="caption" sx={{ fontWeight: 'bold', display: 'block', mb: 0.75 }}>
             タグを選択（クリックでON/OFF）
           </Typography>
           {tags.length > 0 ? (
@@ -770,8 +1069,8 @@ const ListTab = () => {
                       borderWidth: 1,
                       borderStyle: 'solid',
                       fontWeight: isSelected ? 'bold' : 'normal',
-                      fontSize: '0.75rem',
-                      height: 24,
+                      fontSize: '0.72rem',
+                      height: 22,
                     }}
                   />
                 );
@@ -786,9 +1085,15 @@ const ListTab = () => {
       </Popover>
 
       {/* 新規エントリー作成ダイアログ */}
-      <Dialog open={openCreateDialog} onClose={() => setOpenCreateDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>エントリーを追加</DialogTitle>
-        <DialogContent sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Dialog
+        open={openCreateDialog}
+        onClose={() => setOpenCreateDialog(false)}
+        maxWidth="sm"
+        fullWidth
+        fullScreen={isMobile}
+      >
+        <DialogTitle sx={{ py: { xs: 1.5, sm: 2 } }}>エントリーを追加</DialogTitle>
+        <DialogContent sx={{ pt: { xs: 1.5, sm: 2 }, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           <TextField
             autoFocus
             label="タイトル (必須)"
@@ -799,11 +1104,11 @@ const ListTab = () => {
           />
 
           <Box>
-            <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
+            <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 0.75 }}>
               タグの選択:
             </Typography>
             {tags.length > 0 ? (
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                 {tags.map((tag) => {
                   const isSelected = newSelectedTagIds.includes(tag.id);
                   return (
@@ -820,6 +1125,7 @@ const ListTab = () => {
                         borderWidth: 1,
                         borderStyle: 'solid',
                         fontWeight: isSelected ? 'bold' : 'normal',
+                        fontSize: '0.75rem',
                       }}
                     />
                   );
@@ -843,7 +1149,7 @@ const ListTab = () => {
             placeholder="事実や思考の詳細内容を記入してください"
           />
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ px: 2, py: 1.5 }}>
           <Button onClick={() => setOpenCreateDialog(false)}>キャンセル</Button>
           <Button onClick={handleCreateEntry} variant="contained" disabled={!newTitle.trim()}>
             作成
