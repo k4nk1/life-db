@@ -658,60 +658,99 @@ const ListTab = () => {
                           '&:hover': { bgcolor: '#f0f4f8' },
                         }}
                       >
-                        {/* 補足テキスト（全幅をフル活用） */}
+                        {/* 補足テキスト（末尾に日時・削除ボタンをfloat配置して空きスペースに自然に収める） */}
                         {editingSupplementId === supplement.id ? (
-                          <TextField
-                            size="small"
-                            variant="standard"
-                            value={editingSupplementText}
-                            autoFocus
-                            multiline
-                            onChange={(e) => setEditingSupplementText(e.target.value)}
-                            onBlur={() => handleSaveSupplement(entry.id, supplement.id)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' && !e.shiftKey) {
-                                e.preventDefault();
-                                handleSaveSupplement(entry.id, supplement.id);
-                              }
-                              if (e.key === 'Escape') setEditingSupplementId(null);
-                            }}
-                            sx={{ width: '100%', '& .MuiInputBase-input': { py: 0.1, fontSize: '0.78rem' } }}
-                          />
+                          <Box>
+                            <TextField
+                              size="small"
+                              variant="standard"
+                              value={editingSupplementText}
+                              autoFocus
+                              multiline
+                              onChange={(e) => setEditingSupplementText(e.target.value)}
+                              onBlur={() => handleSaveSupplement(entry.id, supplement.id)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                  e.preventDefault();
+                                  handleSaveSupplement(entry.id, supplement.id);
+                                }
+                                if (e.key === 'Escape') setEditingSupplementId(null);
+                              }}
+                              sx={{ width: '100%', '& .MuiInputBase-input': { py: 0.1, fontSize: '0.78rem' } }}
+                            />
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 0.5, mt: 0.1 }}>
+                              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+                                {formatDate(supplement.createdAt)}
+                              </Typography>
+                              <IconButton
+                                size="small"
+                                color="error"
+                                onClick={() => handleDeleteSupplement(supplement.id)}
+                                sx={{ p: 0.1 }}
+                                title="補足を削除"
+                              >
+                                <DeleteIcon sx={{ fontSize: 13 }} />
+                              </IconButton>
+                            </Box>
+                          </Box>
                         ) : (
-                          <Typography
-                            variant="body2"
+                          <Box
                             onClick={() => {
                               setEditingSupplementId(supplement.id);
                               setEditingSupplementText(supplement.content);
                             }}
                             sx={{
                               fontSize: '0.78rem',
-                              whiteSpace: 'pre-wrap',
-                              wordBreak: 'break-word',
-                              lineHeight: 1.35,
+                              lineHeight: 1.4,
                               cursor: 'pointer',
                               width: '100%',
+                              '&::after': {
+                                content: '""',
+                                display: 'table',
+                                clear: 'both',
+                              },
                             }}
                           >
-                            {supplement.content}
-                          </Typography>
+                            <Typography
+                              component="span"
+                              variant="body2"
+                              sx={{
+                                fontSize: '0.78rem',
+                                whiteSpace: 'pre-wrap',
+                                wordBreak: 'break-word',
+                                lineHeight: 1.4,
+                              }}
+                            >
+                              {supplement.content}
+                            </Typography>
+                            <Box
+                              component="span"
+                              onClick={(e) => e.stopPropagation()}
+                              sx={{
+                                float: 'right',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 0.5,
+                                ml: 1,
+                                whiteSpace: 'nowrap',
+                                userSelect: 'none',
+                              }}
+                            >
+                              <Typography component="span" variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+                                {formatDate(supplement.createdAt)}
+                              </Typography>
+                              <IconButton
+                                size="small"
+                                color="error"
+                                onClick={() => handleDeleteSupplement(supplement.id)}
+                                sx={{ p: 0.1 }}
+                                title="補足を削除"
+                              >
+                                <DeleteIcon sx={{ fontSize: 13 }} />
+                              </IconButton>
+                            </Box>
+                          </Box>
                         )}
-
-                        {/* 下段: 日時と削除ボタン（右寄せでテキストの横幅を邪魔しない） */}
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 0.5, mt: 0.1 }}>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
-                            {formatDate(supplement.createdAt)}
-                          </Typography>
-                          <IconButton
-                            size="small"
-                            color="error"
-                            onClick={() => handleDeleteSupplement(supplement.id)}
-                            sx={{ p: 0.1 }}
-                            title="補足を削除"
-                          >
-                            <DeleteIcon sx={{ fontSize: 13 }} />
-                          </IconButton>
-                        </Box>
                       </Box>
                     ))}
 
