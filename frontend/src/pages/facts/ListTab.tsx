@@ -589,7 +589,7 @@ const ListTab = () => {
 
                 {/* 展開時: 詳細（内容）および補足エリア */}
                 <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-                  <Box sx={{ mt: 0.75, pt: 0.75, pl: 3.25, borderTop: '1px dashed #e0e0e0' }}>
+                  <Box sx={{ mt: 0.75, pt: 0.75, pl: 1.5, borderTop: '1px dashed #e0e0e0' }}>
                     {/* 詳細（内容） */}
                     <Box sx={{ mb: 1 }}>
                       <Typography
@@ -645,32 +645,37 @@ const ListTab = () => {
                         </Typography>
                       )}
                     </Box>
+                    {/* 補足一覧 */}
                     {supplements.map((supplement) => (
                       <Box
                         key={supplement.id}
                         sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          py: 0.2,
+                          py: 0.35,
                           px: 0.5,
                           borderRadius: 0.5,
+                          borderBottom: '1px dashed #eceff1',
+                          '&:last-of-type': { borderBottom: 'none' },
                           '&:hover': { bgcolor: '#f0f4f8' },
                         }}
                       >
+                        {/* 補足テキスト（全幅をフル活用） */}
                         {editingSupplementId === supplement.id ? (
                           <TextField
                             size="small"
                             variant="standard"
                             value={editingSupplementText}
                             autoFocus
+                            multiline
                             onChange={(e) => setEditingSupplementText(e.target.value)}
                             onBlur={() => handleSaveSupplement(entry.id, supplement.id)}
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleSaveSupplement(entry.id, supplement.id);
+                              if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSaveSupplement(entry.id, supplement.id);
+                              }
                               if (e.key === 'Escape') setEditingSupplementId(null);
                             }}
-                            sx={{ flexGrow: 1, mr: 1, '& .MuiInputBase-input': { py: 0.1, fontSize: '0.78rem' } }}
+                            sx={{ width: '100%', '& .MuiInputBase-input': { py: 0.1, fontSize: '0.78rem' } }}
                           />
                         ) : (
                           <Typography
@@ -683,16 +688,18 @@ const ListTab = () => {
                               fontSize: '0.78rem',
                               whiteSpace: 'pre-wrap',
                               wordBreak: 'break-word',
-                              flexGrow: 1,
-                              mr: 1,
+                              lineHeight: 1.35,
                               cursor: 'pointer',
+                              width: '100%',
                             }}
                           >
                             {supplement.content}
                           </Typography>
                         )}
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.68rem' }}>
+
+                        {/* 下段: 日時と削除ボタン（右寄せでテキストの横幅を邪魔しない） */}
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 0.5, mt: 0.1 }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
                             {formatDate(supplement.createdAt)}
                           </Typography>
                           <IconButton
@@ -700,8 +707,9 @@ const ListTab = () => {
                             color="error"
                             onClick={() => handleDeleteSupplement(supplement.id)}
                             sx={{ p: 0.1 }}
+                            title="補足を削除"
                           >
-                            <DeleteIcon sx={{ fontSize: 14 }} />
+                            <DeleteIcon sx={{ fontSize: 13 }} />
                           </IconButton>
                         </Box>
                       </Box>
