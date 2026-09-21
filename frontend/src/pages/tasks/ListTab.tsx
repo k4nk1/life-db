@@ -803,6 +803,10 @@ const TaskCard: React.FC<TaskCardProps> = ({
     if (!dl) return '期限なし';
     try {
       const date = typeof dl === 'string' ? parseISO(dl) : dl;
+      const now = new Date();
+      if (date.getFullYear() === now.getFullYear()) {
+        return format(date, 'MM/dd HH:mm', { locale: ja });
+      }
       return format(date, 'yyyy/MM/dd HH:mm', { locale: ja });
     } catch {
       return String(dl);
@@ -815,19 +819,19 @@ const TaskCard: React.FC<TaskCardProps> = ({
     <Card
       variant="outlined"
       sx={{
-        borderRadius: 1.5,
-        ml: level * 1.5,
+        borderRadius: 1,
+        ml: level * 1,
         bgcolor: level > 0 ? 'action.hover' : 'background.paper',
       }}
     >
-      <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+      <CardContent sx={{ p: 1, '&:last-child': { pb: 1 } }}>
         {/* 上段: 展開矢印 ＆ タイトル ＆ 削除 */}
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25 }}>
           <IconButton
             size="small"
             onClick={() => setOpen(!open)}
             aria-label="展開"
-            sx={{ p: 0.5, mt: -0.25 }}
+            sx={{ p: 0.25 }}
           >
             {open ? <KeyboardArrowDownIcon fontSize="small" /> : <KeyboardArrowRightIcon fontSize="small" />}
           </IconButton>
@@ -856,8 +860,9 @@ const TaskCard: React.FC<TaskCardProps> = ({
                 onClick={() => setEditingTitle(true)}
                 sx={{
                   fontWeight: 'bold',
+                  fontSize: '0.875rem',
                   cursor: 'pointer',
-                  py: 0.25,
+                  py: 0.1,
                   wordBreak: 'break-word',
                   textDecoration: task.status === 'completed' ? 'line-through' : 'none',
                   color: task.status === 'completed' ? 'text.secondary' : 'text.primary',
@@ -868,13 +873,23 @@ const TaskCard: React.FC<TaskCardProps> = ({
             )}
           </Box>
 
-          <IconButton size="small" color="error" onClick={handleDelete} sx={{ p: 0.5 }}>
+          <IconButton size="small" color="error" onClick={handleDelete} sx={{ p: 0.25 }}>
             <DeleteIcon fontSize="small" />
           </IconButton>
         </Box>
 
-        {/* 中段: 進行状況 ＆ 重さ ＆ 期限 */}
-        <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1, mt: 1, ml: 4 }}>
+        {/* 中段: 進行状況 ＆ 重さ ＆ 期限 を1行にコンパクトに配置 */}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.75,
+            mt: 0.5,
+            ml: 0.5,
+            flexWrap: 'nowrap',
+            overflow: 'hidden',
+          }}
+        >
           {/* 進行状況 */}
           {getStatusChip(task.status, e => setStatusMenuAnchor(e.currentTarget))}
           <Menu
@@ -908,13 +923,14 @@ const TaskCard: React.FC<TaskCardProps> = ({
             }}
             sx={{
               cursor: 'pointer',
-              px: 0.75,
-              py: 0.25,
+              px: 0.6,
+              py: 0.15,
               borderRadius: 1,
               bgcolor: 'action.hover',
+              flexShrink: 0,
             }}
           >
-            <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
+            <Typography variant="caption" sx={{ fontWeight: 'bold', fontSize: '0.75rem' }}>
               重さ: {task.weight}
               {subWeight > 0 && ` (${subWeight})`}
             </Typography>
@@ -927,9 +943,14 @@ const TaskCard: React.FC<TaskCardProps> = ({
             sx={{
               cursor: 'pointer',
               px: 0.5,
-              py: 0.25,
+              py: 0.15,
               borderRadius: 1,
               color: task.deadline ? 'text.primary' : 'text.secondary',
+              fontSize: '0.75rem',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              flexShrink: 1,
               '&:hover': { bgcolor: 'action.hover' },
             }}
           >
@@ -941,9 +962,9 @@ const TaskCard: React.FC<TaskCardProps> = ({
         <Collapse in={open} timeout="auto" unmountOnExit>
           <Box
             sx={{
-              mt: 1.5,
-              pt: 1,
-              pl: 1,
+              mt: 0.75,
+              pt: 0.5,
+              pl: 0.75,
               borderLeft: '2px solid',
               borderColor: 'primary.light',
             }}
@@ -1268,42 +1289,55 @@ const ListTab = () => {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 1, sm: 1.5 } }}>
       {/* ツールバー（検索・追加） */}
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
-        spacing={1.5}
+        spacing={{ xs: 0.75, sm: 1.5 }}
         sx={{
           justifyContent: 'space-between',
           alignItems: { xs: 'stretch', sm: 'center' },
         }}
       >
-        <TextField
-          size="small"
-          placeholder="内容・詳細で検索..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon fontSize="small" />
-                </InputAdornment>
-              ),
-            },
-          }}
-          fullWidth={isMobile}
-          sx={{ minWidth: { sm: 260 } }}
-        />
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', width: '100%' }}>
+          <TextField
+            size="small"
+            placeholder="内容・詳細で検索..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              },
+            }}
+            sx={{ flexGrow: 1, minWidth: 0 }}
+          />
+
+          {isMobile && (
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<AddIcon />}
+              onClick={handleOpenCreateRoot}
+              sx={{ whiteSpace: 'nowrap', py: 0.75, px: 1.25, flexShrink: 0 }}
+            >
+              作成
+            </Button>
+          )}
+        </Box>
 
         {/* スマホ時のみソートボタンを表示 */}
         {isMobile && (
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
             <Button
               size="small"
               variant={sort === 'weight' ? 'contained' : 'outlined'}
               onClick={() => handleSortClick('weight')}
-              sx={{ fontSize: '0.75rem', flexGrow: 1 }}
+              sx={{ fontSize: '0.75rem', py: 0.25, flexGrow: 1 }}
             >
               重さ {sort === 'weight' ? (order === 'asc' ? '▲' : '▼') : ''}
             </Button>
@@ -1311,7 +1345,7 @@ const ListTab = () => {
               size="small"
               variant={sort === 'deadline' ? 'contained' : 'outlined'}
               onClick={() => handleSortClick('deadline')}
-              sx={{ fontSize: '0.75rem', flexGrow: 1 }}
+              sx={{ fontSize: '0.75rem', py: 0.25, flexGrow: 1 }}
             >
               期限 {sort === 'deadline' ? (order === 'asc' ? '▲' : '▼') : ''}
             </Button>
@@ -1319,22 +1353,23 @@ const ListTab = () => {
               size="small"
               variant={sort === 'status' ? 'contained' : 'outlined'}
               onClick={() => handleSortClick('status')}
-              sx={{ fontSize: '0.75rem', flexGrow: 1 }}
+              sx={{ fontSize: '0.75rem', py: 0.25, flexGrow: 1 }}
             >
               状況 {sort === 'status' ? (order === 'asc' ? '▲' : '▼') : ''}
             </Button>
           </Box>
         )}
 
-        <Button
-          variant="contained"
-          size="small"
-          startIcon={<AddIcon />}
-          onClick={handleOpenCreateRoot}
-          fullWidth={isMobile}
-        >
-          タスク作成
-        </Button>
+        {!isMobile && (
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<AddIcon />}
+            onClick={handleOpenCreateRoot}
+          >
+            タスク作成
+          </Button>
+        )}
       </Stack>
 
       {/* タスク一覧表示 */}
@@ -1344,7 +1379,7 @@ const ListTab = () => {
         </Box>
       ) : isMobile ? (
         /* スマホ向け: カードリスト表示 */
-        <Stack spacing={1}>
+        <Stack spacing={0.5}>
           {tasks.length === 0 ? (
             <Paper variant="outlined" sx={{ p: 3, textAlign: 'center', color: 'text.secondary' }}>
               {search ? '一致するタスクは見つかりませんでした' : 'タスクが登録されていません'}

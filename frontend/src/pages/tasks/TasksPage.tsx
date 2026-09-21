@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Tabs, Tab, Typography } from '@mui/material';
+import { Box, Tabs, Tab, Typography, useTheme, useMediaQuery } from '@mui/material';
 import ListTab from './ListTab';
 import RecurringTab from './RecurringTab';
 import HistoryTab from './HistoryTab';
@@ -15,12 +15,14 @@ function CustomTabPanel(props: { children?: React.ReactNode; index: number; valu
       aria-labelledby={`tasks-tab-${index}`}
       {...other}
     >
-      {value === index && <Box sx={{ p: { xs: 1.5, sm: 3 } }}>{children}</Box>}
+      {value === index && <Box sx={{ py: { xs: 1, sm: 3 }, px: 0 }}>{children}</Box>}
     </div>
   );
 }
 
 const TasksPage = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [value, setValue] = useState(0);
 
   const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
@@ -30,9 +32,12 @@ const TasksPage = () => {
   return (
     <Box sx={{ width: '100%' }}>
       <Typography
-        variant="h4"
-        gutterBottom
-        sx={{ fontWeight: 'bold', fontSize: { xs: '1.5rem', sm: '2.125rem' } }}
+        variant={isMobile ? 'h6' : 'h4'}
+        sx={{
+          fontWeight: 'bold',
+          fontSize: { xs: '1.1rem', sm: '2.125rem' },
+          mb: { xs: 0.5, sm: 2 },
+        }}
       >
         やること
       </Typography>
@@ -41,9 +46,17 @@ const TasksPage = () => {
           value={value}
           onChange={handleChange}
           aria-label="tasks tabs"
-          variant="scrollable"
-          scrollButtons="auto"
-          allowScrollButtonsMobile
+          variant={isMobile ? 'fullWidth' : 'standard'}
+          sx={{
+            minHeight: 40,
+            '& .MuiTab-root': {
+              minWidth: 0,
+              px: { xs: 0.5, sm: 2 },
+              py: 0.75,
+              fontSize: { xs: '0.8rem', sm: '0.875rem' },
+              minHeight: 40,
+            },
+          }}
         >
           <Tab label="一覧" />
           <Tab label="繰り返しタスク" />
