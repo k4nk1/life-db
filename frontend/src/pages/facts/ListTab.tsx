@@ -588,7 +588,11 @@ const ListTab = () => {
                 </Box>
 
                 {/* 展開時: 詳細（内容）および補足エリア */}
-                <Collapse in={isExpanded} timeout="auto" unmountOnExit>
+                <Collapse
+                  in={isExpanded}
+                  timeout={150}
+                  easing="ease-out"
+                >
                   <Box sx={{ mt: 0.75, pt: 0.75, pl: 1.5, borderTop: '1px dashed #e0e0e0' }}>
                     {/* 詳細（内容） */}
                     <Box sx={{ mb: 1 }}>
@@ -1001,7 +1005,11 @@ const ListTab = () => {
                     {/* 展開時の補足行（縦スペース極小） */}
                     <TableRow>
                       <TableCell colSpan={6} sx={{ py: 0, px: 0, bgcolor: '#f8f9fa' }}>
-                        <Collapse in={isExpanded} timeout="auto" unmountOnExit>
+                        <Collapse
+                          in={isExpanded}
+                          timeout={150}
+                          easing="ease-out"
+                        >
                           <Box sx={{ py: 0.5, pl: 4, pr: 1.5 }}>
                             {/* 補足リスト */}
                             {supplements.map((supplement) => (
