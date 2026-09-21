@@ -458,11 +458,11 @@ const ListTab = () => {
                 }}
               >
                 {/* 1行目: [展開ボタン] [タイトル] [補足数] [削除ボタン] */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5 }}>
                   <IconButton
                     size="small"
                     onClick={() => toggleExpand(entry.id)}
-                    sx={{ p: 0.15 }}
+                    sx={{ p: 0.15, mt: 0.1 }}
                     aria-label="展開"
                   >
                     {isExpanded ? (
@@ -478,10 +478,14 @@ const ListTab = () => {
                       variant="standard"
                       value={titleValue}
                       autoFocus
+                      multiline
                       onChange={(e) => setTitleValue(e.target.value)}
                       onBlur={() => handleSaveTitle(entry.id)}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleSaveTitle(entry.id);
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSaveTitle(entry.id);
+                        }
                         if (e.key === 'Escape') setEditingTitleId(null);
                       }}
                       sx={{ flexGrow: 1, '& .MuiInputBase-input': { py: 0.1, fontSize: '0.85rem' } }}
@@ -498,9 +502,9 @@ const ListTab = () => {
                         fontSize: '0.85rem',
                         cursor: 'pointer',
                         flexGrow: 1,
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
+                        wordBreak: 'break-word',
+                        whiteSpace: 'normal',
+                        lineHeight: 1.35,
                       }}
                     >
                       {entry.title}
@@ -518,6 +522,7 @@ const ListTab = () => {
                         borderRadius: 0.5,
                         fontSize: '0.68rem',
                         flexShrink: 0,
+                        mt: 0.2,
                       }}
                     >
                       {supplements.length}
@@ -528,7 +533,7 @@ const ListTab = () => {
                     size="small"
                     color="error"
                     onClick={() => handleDeleteEntry(entry.id)}
-                    sx={{ p: 0.15, flexShrink: 0 }}
+                    sx={{ p: 0.15, flexShrink: 0, mt: 0.1 }}
                     title="削除"
                   >
                     <DeleteIcon sx={{ fontSize: 16 }} />
@@ -582,51 +587,64 @@ const ListTab = () => {
                   </Typography>
                 </Box>
 
-                {/* 3行目: [内容]（存在時または編集中） */}
-                {(entry.content || editingContentId === entry.id) && (
-                  <Box sx={{ mt: 0.25, pl: 3.25 }}>
-                    {editingContentId === entry.id ? (
-                      <TextField
-                        size="small"
-                        variant="standard"
-                        value={contentValue}
-                        multiline
-                        autoFocus
-                        onChange={(e) => setContentValue(e.target.value)}
-                        onBlur={() => handleSaveContent(entry.id)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-                            handleSaveContent(entry.id);
-                          }
-                          if (e.key === 'Escape') setEditingContentId(null);
-                        }}
-                        sx={{ width: '100%', '& .MuiInputBase-input': { py: 0.1, fontSize: '0.78rem' } }}
-                      />
-                    ) : (
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        onClick={() => {
-                          setEditingContentId(entry.id);
-                          setContentValue(entry.content || '');
-                        }}
-                        sx={{
-                          fontSize: '0.78rem',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {entry.content}
-                      </Typography>
-                    )}
-                  </Box>
-                )}
-
-                {/* 展開時: 補足エリア */}
+                {/* 展開時: 詳細（内容）および補足エリア */}
                 <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-                  <Box sx={{ mt: 0.75, pt: 0.5, pl: 3.25, borderTop: '1px dashed #e0e0e0' }}>
+                  <Box sx={{ mt: 0.75, pt: 0.75, pl: 3.25, borderTop: '1px dashed #e0e0e0' }}>
+                    {/* 詳細（内容） */}
+                    <Box sx={{ mb: 1 }}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ fontWeight: 'bold', display: 'block', mb: 0.25, fontSize: '0.72rem' }}
+                      >
+                        詳細
+                      </Typography>
+                      {editingContentId === entry.id ? (
+                        <TextField
+                          size="small"
+                          variant="outlined"
+                          fullWidth
+                          multiline
+                          minRows={2}
+                          value={contentValue}
+                          autoFocus
+                          placeholder="詳細を入力..."
+                          onChange={(e) => setContentValue(e.target.value)}
+                          onBlur={() => handleSaveContent(entry.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                              handleSaveContent(entry.id);
+                            }
+                            if (e.key === 'Escape') setEditingContentId(null);
+                          }}
+                          sx={{ '& .MuiInputBase-input': { py: 0.5, fontSize: '0.8rem' } }}
+                        />
+                      ) : (
+                        <Typography
+                          variant="body2"
+                          onClick={() => {
+                            setEditingContentId(entry.id);
+                            setContentValue(entry.content || '');
+                          }}
+                          sx={{
+                            fontSize: '0.8rem',
+                            whiteSpace: 'pre-wrap',
+                            wordBreak: 'break-word',
+                            cursor: 'pointer',
+                            color: entry.content ? 'text.primary' : 'text.secondary',
+                            fontStyle: entry.content ? 'normal' : 'italic',
+                            p: 0.5,
+                            borderRadius: 0.5,
+                            bgcolor: entry.content ? '#f8f9fa' : 'transparent',
+                            border: '1px solid',
+                            borderColor: entry.content ? '#e9ecef' : 'transparent',
+                            '&:hover': { bgcolor: '#f0f4f8' },
+                          }}
+                        >
+                          {entry.content || '+ 詳細を追加...'}
+                        </Typography>
+                      )}
+                    </Box>
                     {supplements.map((supplement) => (
                       <Box
                         key={supplement.id}
@@ -664,6 +682,7 @@ const ListTab = () => {
                             sx={{
                               fontSize: '0.78rem',
                               whiteSpace: 'pre-wrap',
+                              wordBreak: 'break-word',
                               flexGrow: 1,
                               mr: 1,
                               cursor: 'pointer',
